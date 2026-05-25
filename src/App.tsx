@@ -100,14 +100,14 @@ const STATIC_IAM_ROSTER: IAMUser[] = [
   {
     id: 'admin-coor',
     name: 'Admin Coordinator',
-    pin: '654321',
+    pin: '123456',
     role: 'Admin',
     createdAt: '2026-05-25T00:00:00.000Z'
   },
   {
     id: 'player-read-only',
     name: 'Standard Player',
-    pin: '111111',
+    pin: '123456',
     role: 'User',
     createdAt: '2026-05-25T00:00:00.000Z'
   }
