@@ -1,0 +1,77 @@
+{
+  "entities": {
+    "IAMUser": {
+      "title": "IAMUser",
+      "description": "Represents an IAM user profile within the application access directory.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user profile."
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the user profile."
+        },
+        "pin": {
+          "type": "string",
+          "description": "6-digit numeric access pin."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["Master Admin", "Admin", "User"],
+          "description": "Security access level."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp indicating when the profile was created."
+        }
+      },
+      "required": ["id", "name", "pin", "role", "createdAt"]
+    },
+    "PlayerDatabase": {
+      "title": "PlayerDatabase",
+      "description": "Stores the central player roster CSV, attendees list, guests, and configuration settings.",
+      "type": "object",
+      "properties": {
+        "csvContent": {
+          "type": "string",
+          "description": "The current master CSV database of players."
+        },
+        "rawAttendeesText": {
+          "type": "string",
+          "description": "The raw text input representing the pasted attendees list."
+        },
+        "nameMappings": {
+          "type": "object",
+          "description": "Explicit key-value pair map of nickname or variation lookups to standard names."
+        },
+        "customGuests": {
+          "type": "array",
+          "description": "Active temporary guest player records."
+        },
+        "selectedNumTeams": {
+          "type": "integer",
+          "description": "The selected quantity of teams to partition groups into."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp of the latest database save."
+        }
+      },
+      "required": ["csvContent", "rawAttendeesText", "nameMappings", "customGuests", "selectedNumTeams"]
+    }
+  },
+  "firestore": {
+    "/iam_users/{userId}": {
+      "schema": "IAMUser",
+      "description": "Individual documents representing registered IAM access profiles."
+    },
+    "/settings/players": {
+      "schema": "PlayerDatabase",
+      "description": "A single global configuration document holding the master player list and builder parameters."
+    }
+  }
+}

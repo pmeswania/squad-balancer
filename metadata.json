@@ -1,0 +1,6 @@
+{
+  "name": "HCOBF Squad Builder",
+  "description": "Squad builder, rating matrix manager, and balanced team generator for Harrow College Old Boys Football Club (HCOBF).",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

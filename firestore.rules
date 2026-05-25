@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Default-deny Catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Validates the shape of an IAM user document
+    function isValidIAMUser(data) {
+      return data.keys().hasAll(['id', 'name', 'pin', 'role', 'createdAt'])
+        && data.keys().size() == 5
+        && data.id is string && data.id.size() <= 128
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 200
+        && data.pin is string && data.pin.matches('^[0-9]{6}$')
+        && (data.role == 'Master Admin' || data.role == 'Admin' || data.role == 'User')
+        && data.createdAt is string;
+    }
+
+    // Validates the shape of the global player database document
+    function isValidPlayerDatabase(data) {
+      return data.keys().hasAll(['csvContent', 'rawAttendeesText', 'nameMappings', 'customGuests', 'selectedNumTeams', 'updatedAt'])
+        && data.keys().size() == 6
+        && data.csvContent is string && data.csvContent.size() <= 500000
+        && data.rawAttendeesText is string && data.rawAttendeesText.size() <= 100000
+        && data.customGuests is list && data.customGuests.size() <= 1000
+        && data.selectedNumTeams is int && data.selectedNumTeams >= 1 && data.selectedNumTeams <= 20
+        && data.updatedAt is string;
+    }
+
+    // Allow read/write access to IAM users, validated by payload shape
+    match /iam_users/{userId} {
+      allow read: if true;
+      allow create, update: if isValidId(userId) && isValidIAMUser(request.resource.data);
+      allow delete: if isValidId(userId);
+    }
+
+    // Allow read/write to the master players configuration document, validated by shape
+    match /settings/players {
+      allow read: if true;
+      allow write: if isValidPlayerDatabase(request.resource.data);
+    }
+  }
+}
