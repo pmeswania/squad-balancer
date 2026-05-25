@@ -14,9 +14,53 @@ export interface TeamMetrics {
   defCount: number;
   midCount: number;
   attCount: number;
+  // Optional parsed trait counts for backward compatibility & analytical balancing
+  poorPositioningCount?: number;
+  lazyCount?: number;
+  slowCount?: number;
+  poorPassingCount?: number;
+  temperamentCount?: number;
+  tenaciousCount?: number;
+  communicatorCount?: number;
+  quickCount?: number;
+  solidCount?: number;
 }
 
 export type PlayerRole = 'GK' | 'DEF' | 'MID' | 'ATT';
+
+/**
+ * Classifies a player's traits from their description parameters.
+ */
+export interface PlayerTraits {
+  poorPositioning: boolean;
+  lazy: boolean;
+  slow: boolean;
+  poorPassing: boolean;
+  temperament: boolean;
+  
+  tenacious: boolean;
+  communicator: boolean;
+  quick: boolean;
+  solid: boolean;
+}
+
+export function getPlayerTraits(player: Player): PlayerTraits {
+  const posAttr = (player.positiveAttribute || '').toLowerCase();
+  const negAttr = (player.negativeAttribute || '').toLowerCase();
+
+  return {
+    poorPositioning: negAttr.includes('position') || negAttr.includes('discipline') || negAttr.includes('awareness') || negAttr.includes('vulnerable') || negAttr.includes('in line') || negAttr.includes('leave defence'),
+    lazy: negAttr.includes('lazy') || negAttr.includes('unbothered'),
+    slow: negAttr.includes('slow') || negAttr.includes('knee'),
+    poorPassing: negAttr.includes('pass') || negAttr.includes('lose') || negAttr.includes('loses') || negAttr.includes('greedy'),
+    temperament: negAttr.includes('negative') || negAttr.includes('tantrum') || negAttr.includes('wind') || negAttr.includes('anger'),
+    
+    tenacious: posAttr.includes('tenacious') || posAttr.includes('work') || posAttr.includes('run'),
+    communicator: posAttr.includes('communic') || posAttr.includes('talk') || posAttr.includes('leader'),
+    quick: posAttr.includes('quick') || posAttr.includes('fast') || posAttr.includes('pace'),
+    solid: posAttr.includes('solid'),
+  };
+}
 
 /**
  * Classifies a player into a primary tactical role based on their ratings.
@@ -53,7 +97,23 @@ export function getPlayerRole(player: Player): PlayerRole {
  */
 export function calculateTeamMetrics(players: Player[]): TeamMetrics {
   if (players.length === 0) {
-    return { avgSkill: 0, avgStamina: 0, gkCount: 0, defCount: 0, midCount: 0, attCount: 0 };
+    return {
+      avgSkill: 0,
+      avgStamina: 0,
+      gkCount: 0,
+      defCount: 0,
+      midCount: 0,
+      attCount: 0,
+      poorPositioningCount: 0,
+      lazyCount: 0,
+      slowCount: 0,
+      poorPassingCount: 0,
+      temperamentCount: 0,
+      tenaciousCount: 0,
+      communicatorCount: 0,
+      quickCount: 0,
+      solidCount: 0
+    };
   }
 
   let totalSkill = 0;
@@ -62,6 +122,15 @@ export function calculateTeamMetrics(players: Player[]): TeamMetrics {
   let defCount = 0;
   let midCount = 0;
   let attCount = 0;
+  let poorPositioningCount = 0;
+  let lazyCount = 0;
+  let slowCount = 0;
+  let poorPassingCount = 0;
+  let temperamentCount = 0;
+  let tenaciousCount = 0;
+  let communicatorCount = 0;
+  let quickCount = 0;
+  let solidCount = 0;
 
   for (const player of players) {
     totalSkill += player.bestRating;
@@ -72,6 +141,18 @@ export function calculateTeamMetrics(players: Player[]): TeamMetrics {
     else if (role === 'DEF') defCount++;
     else if (role === 'MID') midCount++;
     else if (role === 'ATT') attCount++;
+
+    const traits = getPlayerTraits(player);
+    if (traits.poorPositioning) poorPositioningCount++;
+    if (traits.lazy) lazyCount++;
+    if (traits.slow) slowCount++;
+    if (traits.poorPassing) poorPassingCount++;
+    if (traits.temperament) temperamentCount++;
+    
+    if (traits.tenacious) tenaciousCount++;
+    if (traits.communicator) communicatorCount++;
+    if (traits.quick) quickCount++;
+    if (traits.solid) solidCount++;
   }
 
   return {
@@ -80,7 +161,16 @@ export function calculateTeamMetrics(players: Player[]): TeamMetrics {
     gkCount,
     defCount,
     midCount,
-    attCount
+    attCount,
+    poorPositioningCount,
+    lazyCount,
+    slowCount,
+    poorPassingCount,
+    temperamentCount,
+    tenaciousCount,
+    communicatorCount,
+    quickCount,
+    solidCount
   };
 }
 
@@ -109,6 +199,17 @@ function evaluatePartition(teams: Team[]): number {
   let attVariance = 0;
   let sizeVariance = 0;
 
+  // Track parsed attributes variance across teams
+  let poorPositioningVariance = 0;
+  let lazyVariance = 0;
+  let slowVariance = 0;
+  let poorPassingVariance = 0;
+  let temperamentVariance = 0;
+  let tenaciousVariance = 0;
+  let communicatorVariance = 0;
+  let quickVariance = 0;
+  let solidVariance = 0;
+
   // Compute variance for sizes
   const sizes = teams.map(t => t.players.length);
   const meanSize = sizes.reduce((sum, s) => sum + s, 0) / teams.length;
@@ -123,6 +224,18 @@ function evaluatePartition(teams: Team[]): number {
     defVariance += Math.pow(team.metrics.defCount, 2);
     midVariance += Math.pow(team.metrics.midCount, 2);
     attVariance += Math.pow(team.metrics.attCount, 2);
+
+    // Sum squares of trait counts to penalize clustering
+    poorPositioningVariance += Math.pow(team.metrics.poorPositioningCount || 0, 2);
+    lazyVariance += Math.pow(team.metrics.lazyCount || 0, 2);
+    slowVariance += Math.pow(team.metrics.slowCount || 0, 2);
+    poorPassingVariance += Math.pow(team.metrics.poorPassingCount || 0, 2);
+    temperamentVariance += Math.pow(team.metrics.temperamentCount || 0, 2);
+    
+    tenaciousVariance += Math.pow(team.metrics.tenaciousCount || 0, 2);
+    communicatorVariance += Math.pow(team.metrics.communicatorCount || 0, 2);
+    quickVariance += Math.pow(team.metrics.quickCount || 0, 2);
+    solidVariance += Math.pow(team.metrics.solidCount || 0, 2);
   }
 
   // To penalize uneven GK distribution, we check the global GK count spread.
@@ -136,21 +249,33 @@ function evaluatePartition(teams: Team[]): number {
 
   // Scoring weights:
   // - Size imbalance: extremely critical (maximum 1 player difference)
-  // - Skill average variance: highly critical
   // - GK gap: extremely critical
-  // - Subrole counts variance: moderate priority (so positional mix is good)
-  // - Stamina variance: minor priority
+  // - Skill average variance: highly critical
+  // - Size variance: highly critical
+  // - Positional distribution (GK, DEF, MID, ATT): moderate priority
+  // - Traits: Positioning deficiencies, lazy behaviour, low pace, bad passing habits, and high temperaments are distributed
   
   return (
-    (sizeGap * 10000) + 
-    (gkGap * 5000) +
-    (skillVariance * 1000) +
-    (sizeVariance * 2000) +
-    (gkVariance * 100) +
-    (defVariance * 20) +
-    (midVariance * 12) +
-    (attVariance * 20) +
-    (staminaVariance * 5)
+    (sizeGap * 100000) + 
+    (gkGap * 50000) +
+    (skillVariance * 10000) +
+    (sizeVariance * 20000) +
+    (gkVariance * 500) +
+    (defVariance * 100) +
+    (midVariance * 60) +
+    (attVariance * 100) +
+    (staminaVariance * 20) +
+
+    // Attribute distribution penalties
+    (poorPositioningVariance * 1500) +
+    (lazyVariance * 500) +
+    (slowVariance * 500) +
+    (poorPassingVariance * 500) +
+    (temperamentVariance * 400) +
+    (tenaciousVariance * 300) +
+    (communicatorVariance * 300) +
+    (quickVariance * 300) +
+    (solidVariance * 300)
   );
 }
 

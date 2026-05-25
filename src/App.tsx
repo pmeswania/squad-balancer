@@ -2233,6 +2233,57 @@ export default function App() {
                               ATT: {team.metrics.attCount}
                             </div>
                           </div>
+
+                          {/* Tactical Attributes Spread */}
+                          {(team.metrics.poorPositioningCount || team.metrics.lazyCount || team.metrics.slowCount || team.metrics.poorPassingCount || team.metrics.temperamentCount || team.metrics.tenaciousCount || team.metrics.quickCount || team.metrics.communicatorCount || team.metrics.solidCount) ? (
+                            <div className="flex flex-wrap gap-1 mt-1.5 border-t border-slate-105/60 pt-2 opacity-95">
+                              {team.metrics.poorPositioningCount ? (
+                                <span className="bg-rose-50 text-rose-800 border border-rose-100/70 px-1.5 py-0.5 rounded text-[8px] font-bold" title="Players with defensive positional awareness warnings">
+                                  Position Limit: {team.metrics.poorPositioningCount}
+                                </span>
+                              ) : null}
+                              {team.metrics.lazyCount ? (
+                                <span className="bg-amber-50 text-amber-800 border border-amber-100 px-1.5 py-0.5 rounded text-[8px] font-bold" title="Players with low work-rate or lazy tendencies">
+                                  Lazy: {team.metrics.lazyCount}
+                                </span>
+                              ) : null}
+                              {team.metrics.slowCount ? (
+                                <span className="bg-slate-100 text-slate-700 border border-slate-200 px-1.5 py-0.5 rounded text-[8px] font-bold" title="Players with speed or joint stamina warnings">
+                                  Slow: {team.metrics.slowCount}
+                                </span>
+                              ) : null}
+                              {team.metrics.poorPassingCount ? (
+                                <span className="bg-orange-50 text-orange-850 border border-orange-105 px-1.5 py-0.5 rounded text-[8px] font-bold" title="Players with high turnover rate / resists passing">
+                                  Ball Loss: {team.metrics.poorPassingCount}
+                                </span>
+                              ) : null}
+                              {team.metrics.temperamentCount ? (
+                                <span className="bg-red-50 text-red-800 border border-red-100 px-1.5 py-0.5 rounded text-[8px] font-bold" title="Players with temperament/tantrum warnings when losing">
+                                  Temper: {team.metrics.temperamentCount}
+                                </span>
+                              ) : null}
+                              {team.metrics.tenaciousCount ? (
+                                <span className="bg-teal-50 text-teal-800 border border-teal-100 px-1.5 py-0.5 rounded text-[8px] font-bold" title="Hardworking / tenacious players">
+                                  Tenacious: {team.metrics.tenaciousCount}
+                                </span>
+                              ) : null}
+                              {team.metrics.quickCount ? (
+                                <span className="bg-sky-50 text-sky-800 border border-sky-101 px-1.5 py-0.5 rounded text-[8px] font-bold" title="Players with elite swiftness">
+                                  Swift: {team.metrics.quickCount}
+                                </span>
+                              ) : null}
+                              {team.metrics.communicatorCount ? (
+                                <span className="bg-indigo-50 text-indigo-800 border border-indigo-100 px-1.5 py-0.5 rounded text-[8px] font-bold" title="Vocal organizers / leaders on the field">
+                                  Vocal: {team.metrics.communicatorCount}
+                                </span>
+                              ) : null}
+                              {team.metrics.solidCount ? (
+                                <span className="bg-emerald-50 text-emerald-800 border border-emerald-100 px-1.5 py-0.5 rounded text-[8px] font-bold" title="Extremely solid players">
+                                  Solid: {team.metrics.solidCount}
+                                </span>
+                              ) : null}
+                            </div>
+                          ) : null}
                         </div>
 
                       </div>
