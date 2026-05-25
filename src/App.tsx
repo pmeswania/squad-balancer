@@ -1670,13 +1670,6 @@ export default function App() {
                   </h3>
                   <div className="flex items-center gap-1.5">
                     <button
-                      onClick={() => setRawAttendeesText(DEMO_ATTENDEES_RAW)}
-                      className="text-[10px] text-blue-600 hover:text-blue-700 font-bold bg-blue-50 hover:bg-blue-100/70 border border-blue-100 px-2 py-1 rounded transition cursor-pointer"
-                      title="Preload the screenshot list from the prompt"
-                    >
-                      Preload Screenshot Demo
-                    </button>
-                    <button
                       onClick={() => setRawAttendeesText('')}
                       className="text-[10px] text-rose-600 hover:text-rose-700 font-bold bg-rose-50 hover:bg-rose-100/70 border border-rose-100 px-2 py-1 rounded transition cursor-pointer"
                     >
@@ -1686,7 +1679,7 @@ export default function App() {
                 </div>
 
                 <p className="text-xs text-slate-500 mb-4 leading-relaxed">
-                  Paste attendance from screenshot or webpage. Each line will map against the sport skill index directory.
+                  Paste attendance list or text from a webpage message. Each line will map against the sport skill index directory.
                 </p>
 
                 <textarea
@@ -2831,7 +2824,7 @@ export default function App() {
 
                       <div className="flex flex-col gap-1">
                         <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-                          Access PIN Passcode (Numbers only)
+                          Access PIN Passcode (Exactly 6 digits only)
                         </label>
                         <input
                           type="text"
@@ -2938,7 +2931,7 @@ export default function App() {
                       <div className="grid grid-cols-2 gap-2">
                         <div className="flex flex-col gap-1">
                           <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-                            New Secure PIN
+                            New Secure PIN (6 digits only)
                           </label>
                           <input
                             type="password"
@@ -2953,7 +2946,7 @@ export default function App() {
                         </div>
                         <div className="flex flex-col gap-1">
                           <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-                            Confirm PIN
+                            Confirm PIN (6 digits only)
                           </label>
                           <input
                             type="password"
