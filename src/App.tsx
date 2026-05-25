@@ -1150,15 +1150,15 @@ export default function App() {
       const escapedSurname = escapeCsvField(surname);
       const escapedFirst = escapeCsvField(firstName);
 
-      // Create standard new CSV record with 70 ratings across all fields (GK, RB, LB, CB, DMF, Mid, AM, Winger, Striker, Stamina)
-      const newLine = `${escapedSurname},${escapedFirst},70,70,70,70,70,70,70,70,70,70,,`;
+      // Create standard new CSV record with 75 for midfielder, and 70 for other fields (GK, RB, LB, CB, DMF, Mid, AM, Winger, Striker, Stamina)
+      const newLine = `${escapedSurname},${escapedFirst},70,70,70,70,70,75,70,70,70,70,,`;
 
       setCsvContent(prev => {
         const trimmed = prev.trim();
         return trimmed + '\n' + newLine;
       });
 
-      showCustomAlert('Database Profile Created', `"${rawName}" has been successfully added to the HCOBF Master Database with 70 ratings across all positions!`);
+      showCustomAlert('Database Profile Created', `"${rawName}" has been successfully added to the HCOBF Master Database with a 75 Midfielder rating (70 baseline elsewhere)!`);
     } catch (err: any) {
       showCustomAlert('Import Failure', `Error adding player to source matrix: ${err.message}`);
     }
@@ -1208,7 +1208,7 @@ export default function App() {
           return;
         }
 
-        newLines += `\n${escapedSurname},${escapedFirst},70,70,70,70,70,70,70,70,70,70,,`;
+        newLines += `\n${escapedSurname},${escapedFirst},70,70,70,70,70,75,70,70,70,70,,`;
         isChanged = true;
       });
 
@@ -1218,7 +1218,7 @@ export default function App() {
           return trimmed + newLines;
         });
         if (!silent) {
-          showCustomAlert('Batch Profiles Registered', `Successfully added ${unmatchedList.length} player(s) to the HCOBF Master Database with 70 ratings across all positions!`);
+          showCustomAlert('Batch Profiles Registered', `Successfully added ${unmatchedList.length} player(s) to the HCOBF Master Database with a 75 Midfielder rating (70 baseline elsewhere)!`);
         }
       }
     } catch (err: any) {
@@ -1715,10 +1715,10 @@ export default function App() {
                           <button
                             onClick={() => handleAddUnmatchedToSource(name)}
                             className="bg-emerald-600 hover:bg-emerald-700 text-white rounded px-2.5 py-1 text-[10px] font-extrabold transition cursor-pointer flex items-center gap-0.5 shadow-xs"
-                            title={`Click to add "${name}" to the master matrix database with 70 ratings.`}
+                            title={`Click to add "${name}" to the master database with 75 Midfielder rating and 70 elsewhere.`}
                           >
                             <Plus className="h-2.5 w-2.5" />
-                            Add permanently (Skill 70)
+                            Add permanently (Mid 75)
                           </button>
                         </div>
                       ))}
@@ -1750,10 +1750,10 @@ export default function App() {
                       <button
                         onClick={() => handleAddAllUnmatchedToSource(resolvedAttendeesResult.unmatched)}
                         className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[10px] font-extrabold flex items-center gap-1 shadow-sm transition cursor-pointer"
-                        title="Add all remaining unresolved names permanently to the database as 70-rated midfielders."
+                        title="Add all remaining unresolved names permanently to the database with a 75 Midfielder rating and 70 elsewhere."
                       >
                         <Plus className="h-3 w-3" />
-                        Add All as New (Skill 70)
+                        Add All as New (Mid 75)
                       </button>
 
                       <button
@@ -1828,7 +1828,7 @@ export default function App() {
                                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-700 rounded px-2.5 py-1 text-[10.5px] font-black tracking-tight transition cursor-pointer text-center flex items-center justify-center gap-1.5 shadow-xs"
                                 >
                                   <Plus className="h-3 w-3" />
-                                  Add to matrix (CM, Skill 70)
+                                  Add to matrix (CM 75, baseline 70)
                                 </button>
                               </div>
                             </div>
@@ -1899,16 +1899,16 @@ export default function App() {
                               </div>
                             </div>
 
-                            {/* Option C: Permanent Addition with CM / 70 attributes */}
+                            {/* Option C: Permanent Addition with CM / 75 attributes */}
                             <div className="mt-2 text-center">
                               <button
                                 type="button"
                                 onClick={() => handleAddUnmatchedToSource(rawName)}
                                 className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-3 py-2 text-[10.5px] font-black transition cursor-pointer hover:shadow-sm flex items-center justify-center gap-1.5 shadow-xs"
-                                title={`Click to add "${rawName}" permanently to the ratings matrix as a CM / 70 rated player.`}
+                                title={`Click to add "${rawName}" permanently to the ratings matrix with a 75 Midfielder rating and 70 elsewhere.`}
                               >
                                 <Plus className="h-3.5 w-3.5" />
-                                Add permanently to Master Database (70 baseline, CM attributes)
+                                Add permanently to Master Database (75 Midfielder, 70 baseline)
                               </button>
                             </div>
                           </div>
