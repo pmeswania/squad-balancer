@@ -1598,79 +1598,91 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-rose-800 selection:text-white flex flex-col">
       {/* Top Header */}
-      <header className="h-14 md:h-16 flex items-center justify-between px-3 md:px-6 bg-slate-900 text-white shrink-0 border-b border-amber-500/20 sticky top-0 z-40 shadow-sm">
-        <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-2.5 md:gap-4">
+      <header className="py-2.5 md:h-16 flex items-center justify-between px-3 md:px-6 bg-slate-900 text-white shrink-0 border-b border-amber-500/20 sticky top-0 z-40 shadow-sm">
+        <div className="max-w-7xl mx-auto w-full flex flex-col md:flex-row md:items-center justify-between gap-2.5 md:gap-4">
           
-          <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
-            {/* HCOBF Club Icon Logo */}
-            <ClubLogo size={32} showText={false} />
-            <div>
-              <h1 className="text-xs sm:text-sm md:text-lg font-black tracking-tight text-white flex items-center gap-1 font-serif">
-                <span className="hidden sm:inline">Harrow Old Boys FC</span>
-                <span className="sm:hidden">Harrow OB</span>
-                <span className="hidden xs:inline-block text-[8px] md:text-[9px] font-mono font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1 md:px-1.5 py-0.5 rounded leading-none ml-0.5 md:ml-1">Squad</span>
-              </h1>
+          <div className="flex items-center justify-between w-full md:w-auto">
+            <div className="flex items-center gap-2">
+              {/* HCOBF Club Icon Logo */}
+              <ClubLogo size={36} showText={false} />
+              <div>
+                <h1 className="text-sm md:text-lg font-black tracking-tight text-white flex items-center gap-1 font-serif">
+                  <span className="hidden sm:inline">Harrow Old Boys FC</span>
+                  <span className="sm:hidden">Harrow OB FC</span>
+                  <span className="text-[8px] md:text-[9px] font-mono font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1 md:px-1.5 py-0.5 rounded ml-0.5 md:ml-1">Squad</span>
+                </h1>
+              </div>
+            </div>
+            {/* Show Logout on Right in Mobile header directly to save horizontal space */}
+            <div className="flex items-center md:hidden gap-2">
+              <span className="text-[9px] font-mono bg-amber-400/10 border border-amber-500/15 px-1.5 py-0.5 rounded text-amber-400 font-bold max-w-[80px] truncate">
+                {currentUser?.name}
+              </span>
+              <button
+                onClick={handleLogout}
+                className="p-1.5 bg-slate-800 hover:bg-rose-950/40 hover:text-rose-455 border border-slate-700/60 rounded-md text-xs font-bold transition flex items-center gap-1 cursor-pointer text-slate-350"
+                title="Logout"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+              </button>
             </div>
           </div>
 
           {/* Navigation Tabs and Session controls */}
-          <div className="flex items-center gap-2 md:gap-3">
-            {/* Nav tabs - beautifully condensed and slim on mobile */}
-            <div className="flex items-center gap-0.5 md:gap-1 p-0.5 rounded-lg bg-slate-800">
+          <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto overflow-x-auto scrollbar-none py-0.5">
+            <div className="flex items-center gap-0.5 md:gap-1 p-0.5 md:p-1 rounded-lg bg-slate-800 w-full md:w-auto justify-between md:justify-start">
               <button
                 onClick={() => setActiveTab('picker')}
-                className={`px-2 py-1 md:px-4 md:py-1.5 rounded-md text-[10px] md:text-xs font-black transition-all flex items-center justify-center gap-1 md:gap-1.5 cursor-pointer whitespace-nowrap ${
+                className={`flex-1 md:flex-none px-2.5 md:px-4 py-1.5 rounded-md text-[10.5px] md:text-xs font-black transition-all flex items-center justify-center gap-1 md:gap-1.5 cursor-pointer whitespace-nowrap ${
                   activeTab === 'picker'
                     ? 'bg-amber-500 text-slate-950 shadow'
                     : 'text-slate-300 hover:text-white hover:bg-slate-700'
                 }`}
               >
-                <Shuffle className="h-3 w-3 md:h-3.5 md:w-3.5 shrink-0" />
+                <Shuffle className="h-3.5 w-3.5 shrink-0" />
                 <span>Dashboard</span>
               </button>
               <button
                 onClick={() => setActiveTab('database')}
-                className={`px-2 py-1 md:px-4 md:py-1.5 rounded-md text-[10px] md:text-xs font-black transition-all flex items-center justify-center gap-1 md:gap-1.5 cursor-pointer whitespace-nowrap ${
+                className={`flex-1 md:flex-none px-2.5 md:px-4 py-1.5 rounded-md text-[10.5px] md:text-xs font-black transition-all flex items-center justify-center gap-1 md:gap-1.5 cursor-pointer whitespace-nowrap ${
                   activeTab === 'database'
                     ? 'bg-amber-500 text-slate-950 shadow'
                     : 'text-slate-300 hover:text-white hover:bg-slate-700'
                 }`}
               >
-                <FileText className="h-3 w-3 md:h-3.5 md:w-3.5 shrink-0" />
+                <FileText className="h-3.5 w-3.5 shrink-0" />
                 <span>Matrix ({databasePlayers.length})</span>
               </button>
               <button
                 onClick={() => setActiveTab('security')}
-                className={`px-2 py-1 md:px-4 md:py-1.5 rounded-md text-[10px] md:text-xs font-black transition-all flex items-center justify-center gap-1 md:gap-1.5 cursor-pointer whitespace-nowrap ${
+                className={`flex-1 md:flex-none px-2.5 md:px-4 py-1.5 rounded-md text-[10.5px] md:text-xs font-black transition-all flex items-center justify-center gap-1 md:gap-1.5 cursor-pointer whitespace-nowrap ${
                   activeTab === 'security'
                     ? 'bg-amber-500 text-slate-950 shadow'
                     : 'text-slate-300 hover:text-white hover:bg-slate-700'
                 }`}
               >
-                <Shield className="h-3 w-3 md:h-3.5 md:w-3.5 shrink-0" />
-                <span className="hidden xs:inline">Access</span>
-                <span className="xs:hidden">Keys</span>
+                <Shield className="h-3.5 w-3.5 shrink-0" />
+                <span>Access</span>
               </button>
             </div>
 
-            {/* Profile badge & session info */}
-            <div className="flex items-center gap-1.5 md:gap-2.5">
-              <div className="hidden xs:flex flex-col items-end leading-none">
-                <span className="text-[8px] font-mono tracking-tight text-amber-400 font-bold bg-amber-400/10 border border-amber-500/15 px-1 rounded">
-                  {currentUser?.role === 'Master Admin' ? '👑 Master' : currentUser?.role === 'Admin' ? '🛡️ Admin' : '👤 User'}
+            {/* Desktop-only session info */}
+            <div className="hidden md:flex items-center gap-2.5">
+              <div className="flex flex-col items-end">
+                <span className="text-[9px] font-mono tracking-tight text-amber-400 font-bold bg-amber-400/10 border border-amber-500/15 px-1.5 py-0.5 rounded leading-none">
+                  {currentUser?.role === 'Master Admin' ? '👑 Master Admin' : currentUser?.role === 'Admin' ? '🛡️ Admin' : '👤 User'}
                 </span>
-                <span className="text-[10px] text-slate-300 font-bold max-w-[65px] truncate mt-0.5">
+                <span className="text-[11px] text-slate-300 font-bold max-w-[120px] truncate mt-0.5">
                   {currentUser?.name}
                 </span>
               </div>
-              
               <button
                 onClick={handleLogout}
-                className="p-1 md:p-2 bg-slate-800 hover:bg-rose-950/40 hover:text-rose-450 border border-slate-700/60 hover:border-rose-900/30 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer shadow-sm text-slate-300"
+                className="p-2 bg-slate-800 hover:bg-rose-950/40 hover:text-rose-450 border border-slate-700/60 hover:border-rose-900/30 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-sm text-slate-300"
                 title="Logout from active session"
               >
-                <LogOut className="h-3 md:h-3.5 w-3 md:w-3.5 text-slate-400 hover:text-rose-400" />
-                <span className="hidden md:inline text-[11px]">Logout</span>
+                <LogOut className="h-3.5 w-3.5 text-slate-400 hover:text-rose-400" />
+                <span className="text-[11px]">Logout</span>
               </button>
             </div>
           </div>
