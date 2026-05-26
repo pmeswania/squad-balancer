@@ -250,40 +250,42 @@ export function ClubLogo({ className = '', size = 56, showText = true }: LogoPro
  */
 export function ClubBanner() {
   return (
-    <div className="bg-gradient-to-br from-[#681414] via-[#831818] to-[#430909] text-white rounded-2xl border border-amber-500/20 shadow-xl p-6 relative overflow-hidden flex flex-col md:flex-row items-center gap-6">
+    <div className="bg-gradient-to-br from-[#681414] via-[#831818] to-[#430909] text-white rounded-2xl border border-amber-500/20 shadow-xl p-3.5 md:p-6 relative overflow-hidden flex flex-col md:flex-row items-center gap-4 md:gap-6">
       {/* Decorative soccer grid overlay */}
       <div className="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
       
       {/* Absolute gold decorative badge background */}
-      <div className="absolute -right-12 -bottom-12 w-48 h-48 rounded-full bg-amber-500/5 blur-3xl opacity-60" />
+      <div className="absolute -right-12 -bottom-12 w-36 h-36 md:w-48 md:h-48 rounded-full bg-amber-500/5 blur-3xl opacity-60" />
 
-      {/* Premium Club Logo vector */}
-      <ClubLogo size={145} showText={false} className="shrink-0 drop-shadow-2xl" />
+      {/* Premium Club Logo vector - smaller on mobile, larger on desktop */}
+      <div className="shrink-0 drop-shadow-2xl md:scale-125 md:m-4">
+        <ClubLogo size={80} showText={false} />
+      </div>
 
       {/* Club Context Info */}
       <div className="flex-1 text-center md:text-left z-10">
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[10px] font-bold uppercase tracking-wider mb-2">
-          <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 md:px-2.5 md:py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[8px] md:text-[10px] font-bold uppercase tracking-wider mb-1.5 md:mb-2 w-fit">
+          <span className="h-1 w-1 md:h-1.5 md:w-1.5 rounded-full bg-amber-400 animate-pulse" />
           Official Club Balancer
         </div>
         
-        <h2 className="text-2xl font-black tracking-tight text-white leading-tight">
+        <h2 className="text-base sm:text-xl md:text-2xl font-black tracking-tight text-white leading-tight">
           HARROW COLLEGE OLD BOYS FC
         </h2>
         
-        <p className="text-xs text-red-100/80 mt-1 max-w-xl leading-relaxed font-medium">
+        <p className="text-[10.5px] sm:text-xs text-red-100/80 mt-1 max-w-xl leading-relaxed font-medium">
           Welcome to the HCOBF squad balancing portal. Manage player rating matrixes directly, paste weekly attendance sign-ups, and generate perfectly-matched squads.
         </p>
 
         {/* Quick info points */}
-        <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-1.5 mt-4 text-[11px] text-amber-200/90 font-mono">
-          <div className="flex items-center gap-1">
+        <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-2.5 md:gap-x-4 gap-y-1 md:gap-y-1.5 mt-3 md:mt-4 text-[9.5px] md:text-[11px] text-amber-200/90 font-mono">
+          <div className="flex items-center gap-0.5 md:gap-1 whitespace-nowrap">
             <span className="text-amber-400 font-bold">✓</span> Goalkeeper Matching
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5 md:gap-1 whitespace-nowrap">
             <span className="text-amber-400 font-bold">✓</span> Direct Excel/CSV Sync
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5 md:gap-1 whitespace-nowrap">
             <span className="text-amber-400 font-bold">✓</span> Interactive Player Swaps
           </div>
         </div>
