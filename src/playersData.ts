@@ -239,7 +239,13 @@ export interface MatchDetails {
  * Detailed matcher that determines the best matches with confidence scores.
  */
 export function getMatchDetails(rawName: string, players: Player[]): MatchDetails {
-  const cleanStr = rawName.trim().toLowerCase().replace(/[^a-z0-9\s]/g, '');
+  // Pre-clean name by discarding attendee quantity modifiers like "+1", "+2", "+1 of...", etc.
+  const normalizedName = rawName
+    .replace(/\s*\+\s*\d+/g, '') // Remove +1, +2, +12, etc. with or without surrounding spaces
+    .replace(/\s*\+\s*[a-zA-Z]+/g, '') // Remove +guest, +one, etc.
+    .replace(/\s*\+\s*$/g, ''); // Remove trailing plus
+
+  const cleanStr = normalizedName.trim().toLowerCase().replace(/[^a-z0-9\s]/g, '');
   if (!cleanStr) return { player: null, confidence: 'none', score: 0 };
 
   // Split into tokens

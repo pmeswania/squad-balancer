@@ -100,14 +100,14 @@ const STATIC_IAM_ROSTER: IAMUser[] = [
   {
     id: 'admin-coor',
     name: 'Admin Coordinator',
-    pin: '123456',
+    pin: '654321',
     role: 'Admin',
     createdAt: '2026-05-25T00:00:00.000Z'
   },
   {
     id: 'player-read-only',
     name: 'Standard Player',
-    pin: '123456',
+    pin: '111111',
     role: 'User',
     createdAt: '2026-05-25T00:00:00.000Z'
   }
@@ -1125,6 +1125,29 @@ export default function App() {
     }));
   };
 
+  // Delete a single custom guest profile and clear associated mappings
+  const handleDeleteSingleGuest = (guestId: string) => {
+    const guestToDelete = customGuests.find(g => g.id === guestId);
+    if (!guestToDelete) return;
+
+    showCustomConfirm(
+      'Remove Temporary Guest',
+      `Are you sure you want to completely remove the temporary guest profile for "${guestToDelete.firstName}"?`,
+      () => {
+        setCustomGuests(prev => prev.filter(g => g.id !== guestId));
+        setNameMappings(prev => {
+          const updated = { ...prev };
+          Object.keys(updated).forEach(key => {
+            if (updated[key] === guestId) {
+              delete updated[key];
+            }
+          });
+          return updated;
+        });
+      }
+    );
+  };
+
   // Add an unmatched player permanently to the source CSV ratings database
   const handleAddUnmatchedToSource = (rawName: string) => {
     try {
@@ -1912,6 +1935,57 @@ export default function App() {
                 </div>
               )}
 
+              {/* Card 2.5: Active Guest Profiles Manager */}
+              {customGuests.length > 0 && (
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-2">
+                  <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-3">
+                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-amber-500" />
+                      Temporary Guest Profiles ({customGuests.length})
+                    </h3>
+                    <button
+                      onClick={handleResetSetup}
+                      title="Clear all guest profiles and mappings"
+                      className="text-[10px] text-rose-600 hover:text-rose-700 font-bold bg-rose-50 hover:bg-rose-100/70 border border-rose-100 px-2.5 py-1 rounded transition cursor-pointer"
+                    >
+                      Clear All
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mb-4 leading-relaxed">
+                    These are temporary guests added for today's match. Removing them here will also unmap their names.
+                  </p>
+                  <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
+                    {customGuests.map(g => {
+                      const role = getPlayerRole(g);
+                      let roleBadgeColor = 'bg-blue-50 text-blue-700 border-blue-200';
+                      if (role === 'GK') roleBadgeColor = 'bg-rose-50 text-rose-700 border-rose-200';
+                      if (role === 'DEF') roleBadgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                      if (role === 'ATT') roleBadgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
+
+                      return (
+                        <div
+                          key={g.id}
+                          className="flex items-center justify-between gap-3 p-2 bg-slate-50 border border-slate-200 rounded-lg hover:border-slate-350 transition duration-150"
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            <span className="font-semibold text-slate-800 truncate">{g.fullName}</span>
+                            <span className={`text-[9px] px-1.5 rounded font-bold border ${roleBadgeColor} shrink-0`}>{role}</span>
+                            <span className="text-blue-600 font-mono text-[10px] font-bold shrink-0">★ {g.bestRating}</span>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteSingleGuest(g.id)}
+                            className="p-1 hover:bg-rose-100 border border-transparent hover:border-rose-200 rounded text-rose-600 hover:text-rose-700 transition cursor-pointer shrink-0"
+                            title={`Remove temporary guest profile for ${g.fullName}`}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Card 3: Live Player Roster Details representing what fits into the dynamic setup */}
               <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
@@ -2306,45 +2380,47 @@ export default function App() {
                 <div className="lg:col-span-5 flex flex-col gap-6">
                 
                 {/* Text Editor Box */}
-                <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-                  <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-3">
-                    <div>
-                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <Settings className="h-4 w-4 text-blue-500" />
-                        Spreadsheet CSV Editor
-                      </h3>
-                      <p className="text-xs text-slate-500 mt-1">
-                        Edit, copy, or paste player rating rows directly.
-                      </p>
+                {currentUser?.role === 'Master Admin' && (
+                  <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                    <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-3">
+                      <div>
+                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                          <Settings className="h-4 w-4 text-blue-500" />
+                          Spreadsheet CSV Editor
+                        </h3>
+                        <p className="text-xs text-slate-500 mt-1">
+                          Edit, copy, or paste player rating rows directly.
+                        </p>
+                      </div>
+                    </div>
+
+                    <textarea
+                      className="w-full h-[250px] bg-slate-50 border border-slate-200 rounded-lg p-3 text-[11px] text-slate-700 placeholder-slate-450 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono resize-y overflow-auto"
+                      value={csvEditValue}
+                      onChange={(e) => {
+                        setCsvEditValue(e.target.value);
+                        setIsCsvModified(true);
+                      }}
+                      placeholder="Paste your CSV rows here..."
+                    />
+
+                    <div className="mt-4 flex items-center gap-2">
+                      <button
+                        onClick={handleSaveCsvEditor}
+                        disabled={!isCsvModified}
+                        className="flex-1 bg-blue-600 hover:bg-blue-705 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-xs py-2.5 rounded-lg transition cursor-pointer shadow"
+                      >
+                        Save Changes
+                      </button>
+                      <button
+                        onClick={handleRestoreDefaultCsv}
+                        className="bg-white hover:bg-slate-50 border border-slate-300 rounded-lg px-3 py-2.5 text-xs font-semibold text-rose-600 transition cursor-pointer"
+                      >
+                        Reset Defaults
+                      </button>
                     </div>
                   </div>
-
-                  <textarea
-                    className="w-full h-[250px] bg-slate-50 border border-slate-200 rounded-lg p-3 text-[11px] text-slate-700 placeholder-slate-450 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono resize-y overflow-auto"
-                    value={csvEditValue}
-                    onChange={(e) => {
-                      setCsvEditValue(e.target.value);
-                      setIsCsvModified(true);
-                    }}
-                    placeholder="Paste your CSV rows here..."
-                  />
-
-                  <div className="mt-4 flex items-center gap-2">
-                    <button
-                      onClick={handleSaveCsvEditor}
-                      disabled={!isCsvModified}
-                      className="flex-1 bg-blue-600 hover:bg-blue-705 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-xs py-2.5 rounded-lg transition cursor-pointer shadow"
-                    >
-                      Save Changes
-                    </button>
-                    <button
-                      onClick={handleRestoreDefaultCsv}
-                      className="bg-white hover:bg-slate-50 border border-slate-300 rounded-lg px-3 py-2.5 text-xs font-semibold text-rose-600 transition cursor-pointer"
-                    >
-                      Reset Defaults
-                    </button>
-                  </div>
-                </div>
+                )}
 
                 {/* Import/Export dynamic operations box */}
                 <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col gap-4">
@@ -2377,7 +2453,7 @@ export default function App() {
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
                     <Upload className="h-6 w-6 text-slate-400 mx-auto mb-2" />
-                    <p className="text-xs font-bold text-slate-700">
+                    <p className="text-xs font-bold text-slate-705">
                       Drag & Drop CSV Spreadsheet File here
                     </p>
                     <p className="text-[10px] text-slate-400 mt-1">
@@ -2392,19 +2468,37 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* Export Options */}
-                  <div className="bg-slate-50 border border-slate-100 rounded-lg p-3 flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-bold text-slate-800">Export Matrix File</p>
-                      <p className="text-[10px] text-slate-500">Get standard .csv backup file</p>
+                  {/* Export Options & Reset Section */}
+                  <div className="flex flex-col gap-2">
+                    <div className="bg-slate-50 border border-slate-100 rounded-lg p-3 flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-bold text-slate-800">Export Matrix File</p>
+                        <p className="text-[10px] text-slate-500">Get standard .csv backup file</p>
+                      </div>
+                      <button
+                        onClick={handleDownloadCsv}
+                        className="bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition cursor-pointer"
+                      >
+                        <Download className="h-3.5 w-3.5 text-blue-600" />
+                        Download .CSV
+                      </button>
                     </div>
-                    <button
-                      onClick={handleDownloadCsv}
-                      className="bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition cursor-pointer"
-                    >
-                      <Download className="h-3.5 w-3.5 text-blue-600" />
-                      Download .CSV
-                    </button>
+
+                    {currentUser?.role === 'Admin' && (
+                      <div className="bg-rose-50 border border-rose-100 rounded-lg p-3 flex items-center justify-between animate-fade-in">
+                        <div>
+                          <p className="text-xs font-bold text-rose-800">Reset to Defaults</p>
+                          <p className="text-[10px] text-rose-600">Revert entire catalog to baseline</p>
+                        </div>
+                        <button
+                          onClick={handleRestoreDefaultCsv}
+                          className="bg-white hover:bg-rose-100 hover:border-rose-300 border border-rose-250 text-rose-700 px-3 py-2 rounded-lg text-xs font-extrabold flex items-center gap-1.5 shadow transition cursor-pointer"
+                        >
+                          <RotateCcw className="h-3.5 w-3.5 text-rose-600" />
+                          Reset Defaults
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Team manager instructions */}
