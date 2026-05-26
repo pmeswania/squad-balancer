@@ -1598,60 +1598,77 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-rose-800 selection:text-white flex flex-col">
       {/* Top Header */}
-      <header className="h-16 flex items-center justify-between px-6 bg-slate-900 text-white shrink-0 border-b border-amber-500/20 sticky top-0 z-40 shadow-sm">
-        <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            {/* HCOBF Club Icon Logo */}
-            <ClubLogo size={42} showText={false} />
-            <div>
-              <h1 className="text-lg font-black tracking-tight text-white flex items-center gap-1.5 font-serif">
-                Harrow Old Boys FC
-                <span className="text-[9px] font-mono font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded ml-1">Squad Builder</span>
-              </h1>
+      <header className="py-2.5 md:h-16 flex items-center justify-between px-3 md:px-6 bg-slate-900 text-white shrink-0 border-b border-amber-500/20 sticky top-0 z-40 shadow-sm">
+        <div className="max-w-7xl mx-auto w-full flex flex-col md:flex-row md:items-center justify-between gap-2.5 md:gap-4">
+          
+          <div className="flex items-center justify-between w-full md:w-auto">
+            <div className="flex items-center gap-2">
+              {/* HCOBF Club Icon Logo */}
+              <ClubLogo size={36} showText={false} />
+              <div>
+                <h1 className="text-sm md:text-lg font-black tracking-tight text-white flex items-center gap-1 font-serif">
+                  <span className="hidden sm:inline">Harrow Old Boys FC</span>
+                  <span className="sm:hidden">Harrow OB FC</span>
+                  <span className="text-[8px] md:text-[9px] font-mono font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1 md:px-1.5 py-0.5 rounded ml-0.5 md:ml-1">Squad</span>
+                </h1>
+              </div>
+            </div>
+            {/* Show Logout on Right in Mobile header directly to save horizontal space */}
+            <div className="flex items-center md:hidden gap-2">
+              <span className="text-[9px] font-mono bg-amber-400/10 border border-amber-500/15 px-1.5 py-0.5 rounded text-amber-400 font-bold max-w-[80px] truncate">
+                {currentUser?.name}
+              </span>
+              <button
+                onClick={handleLogout}
+                className="p-1.5 bg-slate-800 hover:bg-rose-950/40 hover:text-rose-455 border border-slate-700/60 rounded-md text-xs font-bold transition flex items-center gap-1 cursor-pointer text-slate-350"
+                title="Logout"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+              </button>
             </div>
           </div>
 
           {/* Navigation Tabs and Session controls */}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1 p-1 rounded-lg bg-slate-800">
+          <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto overflow-x-auto scrollbar-none py-0.5">
+            <div className="flex items-center gap-0.5 md:gap-1 p-0.5 md:p-1 rounded-lg bg-slate-800 w-full md:w-auto justify-between md:justify-start">
               <button
                 onClick={() => setActiveTab('picker')}
-                className={`px-4 py-1.5 rounded-md text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                className={`flex-1 md:flex-none px-2.5 md:px-4 py-1.5 rounded-md text-[10.5px] md:text-xs font-black transition-all flex items-center justify-center gap-1 md:gap-1.5 cursor-pointer whitespace-nowrap ${
                   activeTab === 'picker'
-                    ? 'bg-amber-500 text-slate-950 shadow font-bold'
+                    ? 'bg-amber-500 text-slate-950 shadow'
                     : 'text-slate-300 hover:text-white hover:bg-slate-700'
                 }`}
               >
-                <Shuffle className="h-3.5 w-3.5" />
-                Dashboard
+                <Shuffle className="h-3.5 w-3.5 shrink-0" />
+                <span>Dashboard</span>
               </button>
               <button
                 onClick={() => setActiveTab('database')}
-                className={`px-4 py-1.5 rounded-md text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                className={`flex-1 md:flex-none px-2.5 md:px-4 py-1.5 rounded-md text-[10.5px] md:text-xs font-black transition-all flex items-center justify-center gap-1 md:gap-1.5 cursor-pointer whitespace-nowrap ${
                   activeTab === 'database'
-                    ? 'bg-amber-500 text-slate-950 shadow font-bold'
+                    ? 'bg-amber-500 text-slate-950 shadow'
                     : 'text-slate-300 hover:text-white hover:bg-slate-700'
                 }`}
               >
-                <FileText className="h-3.5 w-3.5" />
-                Matrix Editor ({databasePlayers.length})
+                <FileText className="h-3.5 w-3.5 shrink-0" />
+                <span>Matrix ({databasePlayers.length})</span>
               </button>
               <button
                 onClick={() => setActiveTab('security')}
-                className={`px-4 py-1.5 rounded-md text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                className={`flex-1 md:flex-none px-2.5 md:px-4 py-1.5 rounded-md text-[10.5px] md:text-xs font-black transition-all flex items-center justify-center gap-1 md:gap-1.5 cursor-pointer whitespace-nowrap ${
                   activeTab === 'security'
-                    ? 'bg-amber-500 text-slate-950 shadow font-bold'
+                    ? 'bg-amber-500 text-slate-950 shadow'
                     : 'text-slate-300 hover:text-white hover:bg-slate-700'
                 }`}
               >
-                <Shield className="h-3.5 w-3.5" />
-                Access Control
+                <Shield className="h-3.5 w-3.5 shrink-0" />
+                <span>Access</span>
               </button>
             </div>
 
-            {/* User Session Badge / Logout */}
-            <div className="flex items-center gap-2.5">
-              <div className="hidden md:flex flex-col items-end">
+            {/* Desktop-only session info */}
+            <div className="hidden md:flex items-center gap-2.5">
+              <div className="flex flex-col items-end">
                 <span className="text-[9px] font-mono tracking-tight text-amber-400 font-bold bg-amber-400/10 border border-amber-500/15 px-1.5 py-0.5 rounded leading-none">
                   {currentUser?.role === 'Master Admin' ? '👑 Master Admin' : currentUser?.role === 'Admin' ? '🛡️ Admin' : '👤 User'}
                 </span>
@@ -1665,7 +1682,7 @@ export default function App() {
                 title="Logout from active session"
               >
                 <LogOut className="h-3.5 w-3.5 text-slate-400 hover:text-rose-400" />
-                <span className="hidden sm:inline text-[11px]">Logout</span>
+                <span className="text-[11px]">Logout</span>
               </button>
             </div>
           </div>
@@ -1673,13 +1690,13 @@ export default function App() {
       </header>
 
       {/* Main Content Layout */}
-      <main className="max-w-7xl mx-auto w-full px-6 py-8 flex flex-col gap-6 flex-1">
+      <main className="max-w-7xl mx-auto w-full px-3 md:px-6 py-4 md:py-8 flex flex-col gap-6 flex-1">
         
         {/* HCOBF Showcase Hero Header */}
         <ClubBanner />
 
         {activeTab === 'picker' ? (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-8 items-start">
             
             {/* Left Hand: Paste Lineup & Resolve Guests Panel */}
             <div className="lg:col-span-5 flex flex-col gap-6">
@@ -2242,8 +2259,8 @@ export default function App() {
                                     {p.bestRating}
                                   </span>
                                   
-                                  {/* Fast Interactive Controls (Swap/Move) */}
-                                  <div className="flex opacity-0 group-hover/item:opacity-100 transition duration-150 gap-1.5">
+                                  {/* Fast Interactive Controls (Swap/Move) - Persistent on touch devices/mobile, hover-disclosed on larger screens */}
+                                  <div className="flex lg:opacity-0 lg:group-hover/item:opacity-100 transition duration-150 gap-1.5 opacity-100">
                                     {/* Swap Trigger Button */}
                                     <button
                                       onClick={() => handleInitiateSwap(team.id, p.id)}
@@ -2374,7 +2391,7 @@ export default function App() {
           /* "Players Matrix" Database Tab Screen details representing CSV edits */
           <div className="flex flex-col gap-6">
             
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-8 items-start">
               {/* Matrix Left Column: Raw CSV Configurator */}
               {(currentUser?.role === 'Master Admin' || currentUser?.role === 'Admin') && (
                 <div className="lg:col-span-5 flex flex-col gap-6">
@@ -2454,10 +2471,10 @@ export default function App() {
                     />
                     <Upload className="h-6 w-6 text-slate-400 mx-auto mb-2" />
                     <p className="text-xs font-bold text-slate-705">
-                      Drag & Drop CSV Spreadsheet File here
+                      Tap or Drag & Drop CSV Spreadsheet here
                     </p>
                     <p className="text-[10px] text-slate-400 mt-1">
-                      or click to browse your computer
+                      Supports direct exports and manual catalogs
                     </p>
                   </div>
 
@@ -2872,7 +2889,7 @@ export default function App() {
               </div>
             </div>
 
-            <div className={(currentUser?.role === 'Master Admin' || currentUser?.role === 'Admin') ? "grid grid-cols-1 lg:grid-cols-12 gap-8 items-start" : "max-w-xl mx-auto w-full"}>
+            <div className={(currentUser?.role === 'Master Admin' || currentUser?.role === 'Admin') ? "grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-8 items-start" : "max-w-xl mx-auto w-full"}>
               {/* Security Left: Profile Management Forms */}
               <div className={(currentUser?.role === 'Master Admin' || currentUser?.role === 'Admin') ? "lg:col-span-5 flex flex-col gap-6" : "flex flex-col gap-6"}>
                 
