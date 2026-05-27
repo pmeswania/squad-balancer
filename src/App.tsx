@@ -2692,16 +2692,15 @@ export default function App() {
                     </ol>
                   </div>
 
-                  {/* Segregated Player Relationships management panel */}
-                  {renderSegregatedPairsCard()}
-
                 </div>
 
               </div>
             )}
 
               {/* Matrix Right Column: Live Table Grid and search explorer */}
-              <div className={`${(currentUser?.role === 'Master Admin' || currentUser?.role === 'Admin') ? 'lg:col-span-7' : 'lg:col-span-12'} bg-white border border-slate-200 rounded-xl p-6 shadow-sm`}>
+              <div className={`${(currentUser?.role === 'Master Admin' || currentUser?.role === 'Admin') ? 'lg:col-span-7' : 'lg:col-span-12'} flex flex-col gap-6`}>
+                
+                <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
                 
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4 pb-4 border-b border-slate-105">
                   <div className="flex-1">
@@ -3029,14 +3028,12 @@ export default function App() {
                   </table>
                 </div>
 
-                {/* If standard player view (without left-side columns), show the Segregated Pairs card below the table */}
-                {!(currentUser?.role === 'Master Admin' || currentUser?.role === 'Admin') && (
-                  <div className="mt-6">
-                    {renderSegregatedPairsCard()}
-                  </div>
-                )}
-
               </div>
+
+              {/* Segregated Player Relationships management panel */}
+              {renderSegregatedPairsCard()}
+
+            </div>
               
             </div>
 
