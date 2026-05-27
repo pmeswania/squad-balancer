@@ -1714,7 +1714,7 @@ export default function App() {
           {segregatedPairs.length === 0 ? (
             <p className="text-xs text-slate-400 italic">No segregation rules specified yet. All players can play together.</p>
           ) : (
-            <div className="max-h-[140px] overflow-y-auto space-y-1.5 pr-1">
+            <div className="space-y-1.5">
               {segregatedPairs.map(pairKey => {
                 const [id1, id2] = pairKey.split(':');
                 const p1 = databasePlayers.find(p => p.id === id1);
