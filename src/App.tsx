@@ -997,8 +997,8 @@ export default function App() {
   };
 
   const handleRemoveSegregatedPair = (pairKey: string) => {
-    if (currentUser?.role !== 'Master Admin' && currentUser?.role !== 'Admin') {
-      showCustomAlert('Access Denied', 'Database credentials restricted. Only Coordinators can modify segregated relationships.');
+    if (currentUser?.role !== 'Master Admin' && currentUser?.role !== 'Admin' && currentUser?.role !== 'User') {
+      showCustomAlert('Access Denied', 'Database credentials restricted. You must be an authorized member to modify segregated relationships.');
       return;
     }
 
@@ -1723,7 +1723,7 @@ export default function App() {
   }
 
   const renderSegregatedPairsCard = () => {
-    const isCoordinator = currentUser?.role === 'Master Admin' || currentUser?.role === 'Admin';
+    const isAllowedSegregation = currentUser?.role === 'Master Admin' || currentUser?.role === 'Admin' || currentUser?.role === 'User';
     return (
       <div id="segregated-rules-card" className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col gap-4 animate-fade-in">
         <div>
@@ -1736,8 +1736,8 @@ export default function App() {
           </p>
         </div>
 
-        {/* Add Segregation Rule (Admins only) */}
-        {isCoordinator ? (
+        {/* Add Segregation Rule */}
+        {isAllowedSegregation ? (
           <div className="bg-slate-50 border border-slate-100 rounded-lg p-3.5 space-y-3">
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Create Segregated Pair:</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -1774,7 +1774,7 @@ export default function App() {
           </div>
         ) : (
           <div className="bg-slate-50/50 border border-slate-100 rounded-lg p-3 text-[11px] text-slate-500 italic">
-            Only club coordinators can register or purge segregation rules.
+            You must be signed in to register or purge segregation rules.
           </div>
         )}
 
@@ -1800,7 +1800,7 @@ export default function App() {
                       <span className="font-semibold text-slate-700 truncate">{p2.fullName}</span>
                     </div>
 
-                    {isCoordinator && (
+                    {isAllowedSegregation && (
                       <button
                         onClick={() => handleRemoveSegregatedPair(pairKey)}
                         className="text-slate-400 hover:text-rose-650 p-1 rounded hover:bg-rose-50 transition cursor-pointer"
