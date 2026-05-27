@@ -138,6 +138,14 @@ export default function App() {
     return saved ? parseInt(saved, 10) : 3;
   });
 
+  const [segregatedPairs, setSegregatedPairs] = useState<string[]>(() => {
+    const saved = localStorage.getItem('bt_segregated_pairs');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [segregatePlayer1Id, setSegregatePlayer1Id] = useState<string>('');
+  const [segregatePlayer2Id, setSegregatePlayer2Id] = useState<string>('');
+
   // --- Dynamic App UI State ---
   const [activeTab, setActiveTab] = useState<'picker' | 'database' | 'security'>('picker');
   
@@ -883,6 +891,50 @@ export default function App() {
     );
   };
 
+  const handleAddSegregatedPair = () => {
+    if (!segregatePlayer1Id || !segregatePlayer2Id) {
+      showCustomAlert('Selection Required', 'Please select two players to segregate.');
+      return;
+    }
+    if (segregatePlayer1Id === segregatePlayer2Id) {
+      showCustomAlert('Invalid Selection', 'A player cannot be segregated from themselves.');
+      return;
+    }
+
+    const p1 = databasePlayers.find(p => p.id === segregatePlayer1Id);
+    const p2 = databasePlayers.find(p => p.id === segregatePlayer2Id);
+    if (!p1 || !p2) return;
+
+    const firstId = segregatePlayer1Id < segregatePlayer2Id ? segregatePlayer1Id : segregatePlayer2Id;
+    const secondId = segregatePlayer1Id < segregatePlayer2Id ? segregatePlayer2Id : segregatePlayer1Id;
+    const pairKey = `${firstId}:${secondId}`;
+
+    if (segregatedPairs.includes(pairKey)) {
+      showCustomAlert('Already Segregated', `"${p1.fullName}" and "${p2.fullName}" are already segregated.`);
+      return;
+    }
+
+    setSegregatedPairs([...segregatedPairs, pairKey]);
+    setSegregatePlayer1Id('');
+    setSegregatePlayer2Id('');
+    showCustomAlert('Players Segregated', `"${p1.fullName}" and "${p2.fullName}" will now always be split into different teams!`);
+  };
+
+  const handleRemoveSegregatedPair = (pairKey: string) => {
+    if (currentUser?.role !== 'Master Admin' && currentUser?.role !== 'Admin') {
+      showCustomAlert('Access Denied', 'Database credentials restricted. Only Coordinators can modify segregated relationships.');
+      return;
+    }
+
+    const [id1, id2] = pairKey.split(':');
+    const p1 = databasePlayers.find(p => p.id === id1);
+    const p2 = databasePlayers.find(p => p.id === id2);
+    const names = p1 && p2 ? `"${p1.fullName}" and "${p2.fullName}"` : 'these players';
+
+    setSegregatedPairs(segregatedPairs.filter(p => p !== pairKey));
+    showCustomAlert('Relationship Restored', `Segregation rule removed. ${names} can now be placed on the same team.`);
+  };
+
   const [csvEditValue, setCsvEditValue] = useState<string>(csvContent);
   const [dbSearch, setDbSearch] = useState<string>('');
   const [isCsvModified, setIsCsvModified] = useState<boolean>(false);
@@ -931,6 +983,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('bt_num_teams', selectedNumTeams.toString());
   }, [selectedNumTeams]);
+
+  useEffect(() => {
+    localStorage.setItem('bt_segregated_pairs', JSON.stringify(segregatedPairs));
+  }, [segregatedPairs]);
 
   // Combine database players + custom guests
   const allAvailablePlayers = useMemo(() => {
@@ -1035,7 +1091,7 @@ export default function App() {
   // Trigger Team Generation
   const handleGenerateTeams = () => {
     if (participatingPlayers.length === 0) return;
-    const teams = generateBalancedTeams(participatingPlayers, selectedNumTeams);
+    const teams = generateBalancedTeams(participatingPlayers, selectedNumTeams, segregatedPairs);
     setGeneratedTeams(teams);
   };
 
@@ -1046,7 +1102,7 @@ export default function App() {
     } else {
       setGeneratedTeams([]);
     }
-  }, [participatingPlayers, selectedNumTeams]);
+  }, [participatingPlayers, selectedNumTeams, segregatedPairs]);
 
   // Copy results format to clipboard
   const handleCopyToClipboard = () => {
@@ -1594,6 +1650,103 @@ export default function App() {
       </div>
     );
   }
+
+  const renderSegregatedPairsCard = () => {
+    const isCoordinator = currentUser?.role === 'Master Admin' || currentUser?.role === 'Admin';
+    return (
+      <div id="segregated-rules-card" className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col gap-4 animate-fade-in">
+        <div>
+          <h4 className="text-xs font-bold text-slate-405 uppercase tracking-widest flex items-center gap-2 mb-1">
+            <UserX className="h-4 w-4 text-rose-500 animate-pulse" />
+            Segregated Player Rules
+          </h4>
+          <p className="text-xs text-slate-505 leading-normal">
+            Force certain player pairs to always be distributed onto opposite squads.
+          </p>
+        </div>
+
+        {/* Add Segregation Rule (Admins only) */}
+        {isCoordinator ? (
+          <div className="bg-slate-50 border border-slate-100 rounded-lg p-3.5 space-y-3">
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Create Segregated Pair:</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <select
+                value={segregatePlayer1Id}
+                onChange={(e) => setSegregatePlayer1Id(e.target.value)}
+                className="bg-white border border-slate-205 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:ring-1 focus:ring-amber-500 focus:outline-none cursor-pointer w-full"
+              >
+                <option value="">-- Player 1 --</option>
+                {databasePlayers.map(p => (
+                  <option key={p.id} value={p.id}>{p.fullName}</option>
+                ))}
+              </select>
+
+              <select
+                value={segregatePlayer2Id}
+                onChange={(e) => setSegregatePlayer2Id(e.target.value)}
+                className="bg-white border border-slate-205 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:ring-1 focus:ring-amber-500 focus:outline-none cursor-pointer w-full"
+              >
+                <option value="">-- Player 2 --</option>
+                {databasePlayers.map(p => (
+                  <option key={p.id} value={p.id}>{p.fullName}</option>
+                ))}
+              </select>
+            </div>
+            
+            <button
+              onClick={handleAddSegregatedPair}
+              className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs py-2 rounded-lg transition cursor-pointer shadow flex items-center justify-center gap-1"
+            >
+              <Plus className="h-3.5 w-3.5 text-amber-500" />
+              Segregate Players
+            </button>
+          </div>
+        ) : (
+          <div className="bg-slate-50/50 border border-slate-100 rounded-lg p-3 text-[11px] text-slate-500 italic">
+            Only club coordinators can register or purge segregation rules.
+          </div>
+        )}
+
+        {/* List of active segregated pairs */}
+        <div className="space-y-2">
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Active Segregation Rules ({segregatedPairs.length}):</p>
+          {segregatedPairs.length === 0 ? (
+            <p className="text-xs text-slate-400 italic">No segregation rules specified yet. All players can play together.</p>
+          ) : (
+            <div className="max-h-[140px] overflow-y-auto space-y-1.5 pr-1">
+              {segregatedPairs.map(pairKey => {
+                const [id1, id2] = pairKey.split(':');
+                const p1 = databasePlayers.find(p => p.id === id1);
+                const p2 = databasePlayers.find(p => p.id === id2);
+
+                if (!p1 || !p2) return null;
+
+                return (
+                  <div key={pairKey} className="flex items-center justify-between gap-2 bg-slate-50 border border-slate-101 rounded-lg p-2 text-xs hover:border-slate-300 transition duration-150">
+                    <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                      <span className="font-semibold text-slate-700 truncate">{p1.fullName}</span>
+                      <span className="text-[9px] text-rose-650 font-bold px-1.5 py-0.5 bg-rose-50 rounded border border-rose-100 leading-none select-none">≠ OPPOSITE</span>
+                      <span className="font-semibold text-slate-700 truncate">{p2.fullName}</span>
+                    </div>
+
+                    {isCoordinator && (
+                      <button
+                        onClick={() => handleRemoveSegregatedPair(pairKey)}
+                        className="text-slate-400 hover:text-rose-650 p-1 rounded hover:bg-rose-50 transition cursor-pointer"
+                        title="Remove segregation rule"
+                      >
+                        <Trash2 className="h-3.5 w-3.5 text-rose-500" />
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-rose-800 selection:text-white flex flex-col">
@@ -2533,6 +2686,9 @@ export default function App() {
                     </ol>
                   </div>
 
+                  {/* Segregated Player Relationships management panel */}
+                  {renderSegregatedPairsCard()}
+
                 </div>
 
               </div>
@@ -2866,6 +3022,13 @@ export default function App() {
                     </tbody>
                   </table>
                 </div>
+
+                {/* If standard player view (without left-side columns), show the Segregated Pairs card below the table */}
+                {!(currentUser?.role === 'Master Admin' || currentUser?.role === 'Admin') && (
+                  <div className="mt-6">
+                    {renderSegregatedPairsCard()}
+                  </div>
+                )}
 
               </div>
               
