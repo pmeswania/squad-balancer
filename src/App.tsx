@@ -350,18 +350,23 @@ export default function App() {
 
   // Handle active session sync and verification
   useEffect(() => {
+    if (!hasLoadedFromServer) return; // Wait until server database users list is loaded to prevent premature logouts
+
     if (currentUser) {
       const activeMatch = iamUsers.find(u => u.id === currentUser.id);
       if (activeMatch) {
          if (activeMatch.pin !== currentUser.pin || activeMatch.role !== currentUser.role || activeMatch.name !== currentUser.name) {
-          setCurrentUser(activeMatch);
+          setCurrentUser(prev => prev ? {
+            ...activeMatch,
+            sessionStartedAt: prev.sessionStartedAt
+          } : null);
         }
       } else {
         // Log out immediately if the active user profile is deleted/revoked from directory
         setCurrentUser(null);
       }
     }
-  }, [iamUsers, currentUser]);
+  }, [iamUsers, currentUser, hasLoadedFromServer]);
 
   // Listen to global force-logout security event in real-time
   useEffect(() => {
