@@ -55,13 +55,17 @@
           "type": "integer",
           "description": "The selected quantity of teams to partition groups into."
         },
+        "segregatedPairs": {
+          "type": "array",
+          "description": "Normalized pairs of player IDs to always place onto separate squads."
+        },
         "updatedAt": {
           "type": "string",
           "format": "date-time",
           "description": "ISO timestamp of the latest database save."
         }
       },
-      "required": ["csvContent", "rawAttendeesText", "nameMappings", "customGuests", "selectedNumTeams"]
+      "required": ["csvContent", "rawAttendeesText", "nameMappings", "customGuests", "selectedNumTeams", "segregatedPairs"]
     }
   },
   "firestore": {

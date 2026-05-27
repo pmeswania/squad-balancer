@@ -248,6 +248,7 @@ export default function App() {
             if (pData.nameMappings !== undefined) setNameMappings(pData.nameMappings);
             if (pData.customGuests !== undefined) setCustomGuests(pData.customGuests);
             if (pData.selectedNumTeams !== undefined) setSelectedNumTeams(pData.selectedNumTeams);
+            if (pData.segregatedPairs !== undefined) setSegregatedPairs(pData.segregatedPairs);
           }
         } else {
           // If Firestore configuration is empty, seed it with the local defaults / localStorage cache
@@ -266,6 +267,10 @@ export default function App() {
             selectedNumTeams: (() => {
               const saved = localStorage.getItem('bt_num_teams');
               return saved ? parseInt(saved, 10) : 3;
+            })(),
+            segregatedPairs: (() => {
+              const saved = localStorage.getItem('bt_segregated_pairs');
+              return saved ? JSON.parse(saved) : [];
             })(),
             updatedAt: new Date().toISOString()
           };
@@ -326,6 +331,7 @@ export default function App() {
           nameMappings,
           customGuests,
           selectedNumTeams,
+          segregatedPairs,
           updatedAt: new Date().toISOString()
         });
         console.log("Player configuration synced to Firestore successfully.");
@@ -335,7 +341,7 @@ export default function App() {
     }, 1000);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [csvContent, rawAttendeesText, nameMappings, customGuests, selectedNumTeams, hasLoadedFromServer]);
+  }, [csvContent, rawAttendeesText, nameMappings, customGuests, selectedNumTeams, segregatedPairs, hasLoadedFromServer]);
 
   // Handle active session sync and verification
   useEffect(() => {
