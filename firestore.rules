@@ -35,6 +35,15 @@ service cloud.firestore {
         && data.updatedAt is string;
     }
 
+    // Validates security controls
+    function isValidSecuritySettings(data) {
+      return data.keys().hasAll(['forceLogoutAllAt', 'updatedBy', 'updatedById'])
+        && data.keys().size() == 3
+        && data.forceLogoutAllAt is string
+        && data.updatedBy is string && data.updatedBy.size() > 0
+        && data.updatedById is string && data.updatedById.size() > 0;
+    }
+
     // Allow read/write access to IAM users, validated by payload shape
     match /iam_users/{userId} {
       allow read: if true;
@@ -46,6 +55,12 @@ service cloud.firestore {
     match /settings/players {
       allow read: if true;
       allow write: if isValidPlayerDatabase(request.resource.data);
+    }
+
+    // Allow read/write to global security settings
+    match /settings/security {
+      allow read: if true;
+      allow write: if isValidSecuritySettings(request.resource.data);
     }
   }
 }

@@ -4,4 +4,5 @@ export interface IAMUser {
   pin: string;
   role: 'Master Admin' | 'Admin' | 'User';
   createdAt: string;
+  sessionStartedAt?: string;
 }

@@ -66,6 +66,27 @@
         }
       },
       "required": ["csvContent", "rawAttendeesText", "nameMappings", "customGuests", "selectedNumTeams", "segregatedPairs"]
+    },
+    "SecuritySettings": {
+      "title": "SecuritySettings",
+      "description": "Global security configurations and forced session reset settings.",
+      "type": "object",
+      "properties": {
+        "forceLogoutAllAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp indicating the last time a global force logout was triggered."
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "Name of the admin who triggered the force logout event."
+        },
+        "updatedById": {
+          "type": "string",
+          "description": "ID of the admin who triggered the force logout event."
+        }
+      },
+      "required": ["forceLogoutAllAt", "updatedBy", "updatedById"]
     }
   },
   "firestore": {
@@ -76,6 +97,10 @@
     "/settings/players": {
       "schema": "PlayerDatabase",
       "description": "A single global configuration document holding the master player list and builder parameters."
+    },
+    "/settings/security": {
+      "schema": "SecuritySettings",
+      "description": "System setting representing global security lockouts and forced logout events."
     }
   }
 }

@@ -37,7 +37,7 @@ import {
 } from 'lucide-react';
 
 import { IAMUser } from './types';
-import { collection, doc, getDocs, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, getDoc, setDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 import { db } from './firebase';
 
 import {
@@ -158,6 +158,9 @@ export default function App() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as IAMUser;
+        if (!parsed.sessionStartedAt) {
+          parsed.sessionStartedAt = new Date().toISOString();
+        }
         return parsed;
       } catch (e) {
         console.error('Error parsing current IAM user:', e);
@@ -165,6 +168,8 @@ export default function App() {
     }
     return null;
   });
+
+  const [globalResetTime, setGlobalResetTime] = useState<string | null>(null);
 
   // PIN inputs / login screen local states
   const [loginSelectedUserId, setLoginSelectedUserId] = useState<string>('admin-master');
@@ -348,7 +353,7 @@ export default function App() {
     if (currentUser) {
       const activeMatch = iamUsers.find(u => u.id === currentUser.id);
       if (activeMatch) {
-        if (activeMatch.pin !== currentUser.pin || activeMatch.role !== currentUser.role || activeMatch.name !== currentUser.name) {
+         if (activeMatch.pin !== currentUser.pin || activeMatch.role !== currentUser.role || activeMatch.name !== currentUser.name) {
           setCurrentUser(activeMatch);
         }
       } else {
@@ -357,6 +362,37 @@ export default function App() {
       }
     }
   }, [iamUsers, currentUser]);
+
+  // Listen to global force-logout security event in real-time
+  useEffect(() => {
+    const securityDocRef = doc(db, "settings", "security");
+    const unsubscribe = onSnapshot(securityDocRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        if (data && data.forceLogoutAllAt) {
+          setGlobalResetTime(data.forceLogoutAllAt);
+        }
+      }
+    }, (err) => {
+      console.error("Error watching global security settings:", err);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Check if session needs to be terminated due to a global log out event
+  useEffect(() => {
+    if (currentUser && globalResetTime) {
+      const userSessionTime = currentUser.sessionStartedAt ? new Date(currentUser.sessionStartedAt).getTime() : 0;
+      const resetTime = new Date(globalResetTime).getTime();
+      if (userSessionTime < resetTime) {
+        console.log("Global log out event detected. Terminating active session.");
+        setCurrentUser(null);
+        setActiveTab('picker');
+        showCustomAlert("Session Revoked", "All active sessions have been forced to log out by an administrator coordinator.");
+      }
+    }
+  }, [currentUser, globalResetTime]);
 
   useEffect(() => {
     if (currentUser) {
@@ -417,7 +453,11 @@ export default function App() {
       return;
     }
     // Succeeded!
-    setCurrentUser(user);
+    const userWithSession: IAMUser = {
+      ...user,
+      sessionStartedAt: new Date().toISOString()
+    };
+    setCurrentUser(userWithSession);
     setLoginPin('');
     setLoginError(null);
   };
@@ -425,6 +465,31 @@ export default function App() {
   const handleLogout = () => {
     setCurrentUser(null);
     setActiveTab('picker');
+  };
+
+  const handleGlobalForceLogout = () => {
+    if (currentUser?.role !== 'Master Admin' && currentUser?.role !== 'Admin') {
+      showCustomAlert('Unauthorized', 'Only authorized administrator sessions can terminate global sessions.');
+      return;
+    }
+    showCustomConfirm(
+      'Force Log Out All Users?',
+      'This will instantly terminate all active authorized browser sessions across all devices. Everyone (including you) will be forced back to the passcode entry screen. Are you sure you wish to proceed?',
+      async () => {
+        try {
+          const timestamp = new Date().toISOString();
+          await setDoc(doc(db, "settings", "security"), {
+            forceLogoutAllAt: timestamp,
+            updatedBy: currentUser.name,
+            updatedById: currentUser.id
+          });
+          console.log("Global forced logout triggered at", timestamp);
+        } catch (err) {
+          console.error("Error writing global security settings:", err);
+          showCustomAlert("Error", "Could not synchronize security event to Firestore. Please verify permissions.");
+        }
+      }
+    );
   };
 
   const handleCreateUser = (e: React.FormEvent) => {
@@ -3416,6 +3481,30 @@ export default function App() {
                     </tbody>
                   </table>
                 </div>
+
+                {/* Global Session Controls */}
+                {currentUser?.role === 'Master Admin' && (
+                  <div className="mt-5 pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-50 border border-slate-200/60 p-4 rounded-xl">
+                    <div className="space-y-0.5">
+                      <p className="text-xs font-bold text-slate-800 flex items-center gap-1.5 uppercase tracking-wide">
+                        <ShieldAlert className="h-4 w-4 text-rose-500 animate-pulse" />
+                        Global Session Controls
+                      </p>
+                      <p className="text-[11px] text-slate-500 max-w-md">
+                        Forcefully invalidate all active login sessions. This will require all signed-in users (including you) to re-enter their passcode PINs.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleGlobalForceLogout}
+                      className="shrink-0 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition-all cursor-pointer shadow flex items-center gap-1.5 active:scale-95"
+                      title="Terminate all active user sessions across all devices"
+                    >
+                      <LogOut className="h-3.5 w-3.5" />
+                      Log Out All Users
+                    </button>
+                  </div>
+                )}
 
                 {/* Local Security Guidelines Removed */}
               </div>
