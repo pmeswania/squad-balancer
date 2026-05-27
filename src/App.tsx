@@ -1518,7 +1518,7 @@ export default function App() {
   // --- Lock Screen Overlay if no user authorized ---
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-4 selection:bg-rose-800 relative overflow-hidden">
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-3 sm:p-4 selection:bg-rose-800 relative overflow-hidden">
         {/* Decorative soccer grid/velvet gradients */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#400c0c] via-slate-950 to-slate-950 opacity-90 pointer-events-none" />
         <div className="absolute inset-0 bg-[radial-gradient(#ffffff04_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none" />
@@ -1526,29 +1526,24 @@ export default function App() {
         {/* Gold blur accent */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] rounded-full bg-amber-500/5 blur-[120px] pointer-events-none" />
 
-        <div className="z-10 w-full max-w-md flex flex-col items-center gap-6 animate-fade-in">
-          <ClubLogo size={135} showText={false} className="drop-shadow-2xl" />
+        <div className="z-10 w-full max-w-sm sm:max-w-md flex flex-col items-center gap-3 sm:gap-5 animate-fade-in">
+          <ClubLogo size={80} showText={false} className="drop-shadow-2xl" />
           
-          <div className="text-center space-y-1">
-            <h2 className="text-xl font-black tracking-tight text-white font-serif uppercase">
+          <div className="text-center space-y-0.5 sm:space-y-1">
+            <h2 className="text-lg sm:text-xl font-black tracking-tight text-white font-serif uppercase">
               Harrow College Old Boys FC
             </h2>
-            <p className="text-xs text-amber-400 font-mono tracking-widest uppercase font-extrabold pb-1">
+            <p className="text-[10px] sm:text-xs text-amber-400 font-mono tracking-widest uppercase font-extrabold pb-0.5 sm:pb-1">
               Squad Builder Secure Access
             </p>
           </div>
 
-          <div className="bg-slate-900/95 border border-amber-500/20 shadow-2xl rounded-2xl p-6 w-full backdrop-blur-sm">
-            <h3 className="text-xs font-bold text-slate-100 flex items-center gap-2 border-b border-slate-800 pb-3 mb-4 uppercase tracking-wider">
-              <Lock className="h-4 w-4 text-amber-500" />
-              Authorize Active Session
-            </h3>
-
-            <form onSubmit={handleLogin} className="flex flex-col gap-4">
+          <div className="bg-slate-900/95 border border-amber-500/20 shadow-2xl rounded-2xl p-4 sm:p-5 w-full backdrop-blur-sm">
+            <form onSubmit={handleLogin} className="flex flex-col gap-3 sm:gap-4">
               {/* Dropdown Select User list */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
-                  <User className="h-3 w-3 text-amber-500/70" />
+              <div className="flex flex-col gap-1 sm:gap-1.5">
+                <label className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                  <User className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-amber-500/70" />
                   Select Registered Profile
                 </label>
                 <select
@@ -1557,7 +1552,7 @@ export default function App() {
                     setLoginSelectedUserId(e.target.value);
                     setLoginError(null);
                   }}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-slate-100 text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-2 sm:py-2.5 text-slate-100 text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer text-ellipsis overflow-hidden"
                 >
                   {iamUsers.map(user => (
                     <option key={user.id} value={user.id}>
@@ -1568,9 +1563,9 @@ export default function App() {
               </div>
 
               {/* Passcode Entry */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
-                  <Key className="h-3 w-3 text-amber-500/70" />
+              <div className="flex flex-col gap-1 sm:gap-1.5">
+                <label className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                  <Key className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-amber-500/70" />
                   Security Passcode PIN
                 </label>
                 <input
@@ -1583,12 +1578,12 @@ export default function App() {
                     setLoginPin(e.target.value.replace(/\D/g, ''));
                     setLoginError(null);
                   }}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-slate-105 text-center tracking-widest text-lg font-mono focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 sm:py-2 text-slate-105 text-center tracking-widest text-base sm:text-lg font-mono focus:outline-none focus:ring-1 focus:ring-amber-500"
                 />
               </div>
 
               {/* In-UI Touch-Friendly Keypad */}
-              <div className="grid grid-cols-3 gap-1.5 mt-1">
+              <div className="grid grid-cols-3 gap-1 sm:gap-1.5 mt-0.5">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
                   <button
                     key={num}
@@ -1597,7 +1592,7 @@ export default function App() {
                       setLoginPin(prev => prev + num);
                       setLoginError(null);
                     }}
-                    className="bg-slate-950 hover:bg-slate-800 border border-slate-800/60 rounded-lg py-2.5 text-slate-100 font-mono font-bold text-xs transition cursor-pointer active:scale-95 flex items-center justify-center shadow-inner"
+                    className="bg-slate-950 hover:bg-slate-800 border border-slate-800/60 rounded-lg py-1.5 sm:py-2 text-slate-100 font-mono font-bold text-xs transition cursor-pointer active:scale-95 flex items-center justify-center shadow-inner"
                   >
                     {num}
                   </button>
@@ -1608,7 +1603,7 @@ export default function App() {
                     setLoginPin('');
                     setLoginError(null);
                   }}
-                  className="bg-slate-950 hover:bg-slate-900 border border-slate-800/30 rounded-lg py-2.5 text-rose-450 font-bold text-[9px] uppercase transition cursor-pointer active:scale-95 flex items-center justify-center font-sans"
+                  className="bg-slate-950 hover:bg-slate-900 border border-slate-800/30 rounded-lg py-1.5 sm:py-2 text-rose-455 font-bold text-[8px] sm:text-[9px] uppercase transition cursor-pointer active:scale-95 flex items-center justify-center font-sans"
                 >
                   Clear
                 </button>
@@ -1618,7 +1613,7 @@ export default function App() {
                     setLoginPin(prev => prev + '0');
                     setLoginError(null);
                   }}
-                  className="bg-slate-950 hover:bg-slate-800 border border-slate-800/60 rounded-lg py-2.5 text-slate-100 font-mono font-bold text-xs transition cursor-pointer active:scale-95 flex items-center justify-center shadow-inner"
+                  className="bg-slate-950 hover:bg-slate-800 border border-slate-800/60 rounded-lg py-1.5 sm:py-2 text-slate-100 font-mono font-bold text-xs transition cursor-pointer active:scale-95 flex items-center justify-center shadow-inner"
                 >
                   0
                 </button>
@@ -1628,14 +1623,14 @@ export default function App() {
                     setLoginPin(prev => prev.slice(0, -1));
                     setLoginError(null);
                   }}
-                  className="bg-slate-950 hover:bg-slate-900 border border-slate-850/40 rounded-lg py-2.5 text-slate-400 font-bold text-[9px] uppercase transition cursor-pointer active:scale-95 flex items-center justify-center font-sans"
+                  className="bg-slate-950 hover:bg-slate-900 border border-slate-850/40 rounded-lg py-1.5 sm:py-2 text-slate-400 font-bold text-[8px] sm:text-[9px] uppercase transition cursor-pointer active:scale-95 flex items-center justify-center font-sans"
                 >
                   Delete
                 </button>
               </div>
 
               {loginError && (
-                <div className="bg-rose-950/40 border border-rose-900/40 text-rose-305 px-3.5 py-2 rounded-lg text-[10px] font-semibold flex items-start gap-1.5 leading-normal mt-1 animate-pulse">
+                <div className="bg-rose-950/40 border border-rose-900/40 text-rose-305 px-3 py-1.5 sm:py-2 rounded-lg text-[9px] sm:text-[10px] font-semibold flex items-start gap-1.5 leading-normal mt-0.5 animate-pulse">
                   <ShieldAlert className="h-3.5 w-3.5 shrink-0 text-rose-500 mt-0.5" />
                   <span>{loginError}</span>
                 </div>
@@ -1643,7 +1638,7 @@ export default function App() {
 
               <button
                 type="submit"
-                className="w-full bg-amber-500 hover:bg-amber-600 active:scale-[0.99] text-slate-950 font-black tracking-tight text-xs py-2.5 mt-2 rounded-lg transition-all cursor-pointer shadow flex items-center justify-center gap-1.5"
+                className="w-full bg-amber-500 hover:bg-amber-600 active:scale-[0.99] text-slate-950 font-black tracking-tight text-xs py-2 sm:py-2.5 mt-1 sm:mt-1.5 rounded-lg transition-all cursor-pointer shadow flex items-center justify-center gap-1.5"
               >
                 <Unlock className="h-3.5 w-3.5" />
                 Authorize & Unlock
