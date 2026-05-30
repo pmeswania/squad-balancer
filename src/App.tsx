@@ -2524,6 +2524,22 @@ export default function App() {
                             <span className="font-bold">Balancing Mix</span>
                             <span>Avg Stamina: {team.metrics.avgStamina}</span>
                           </div>
+
+                          {/* Advanced Multi-Dimensional Tactical Zonal Metrics */}
+                          <div className="flex items-center justify-between bg-slate-100/55 rounded-md px-2 py-1.5 text-[9px] text-slate-650 border border-slate-200/60 select-none">
+                            <span className="font-semibold text-slate-500">Zonal Caps</span>
+                            <div className="flex items-center gap-2">
+                              <span title="Aggregate defensive strength across all team players (Centre Back, Right Back, Left Back, Defensive Midfielder)" className="flex items-center gap-0.5 font-bold text-emerald-800">
+                                🛡️ DEF: {team.metrics.avgDefending}
+                              </span>
+                              <span title="Aggregate midfield/progression strength across all team players (Midfielder, Defensive/Attacking Midfielder)" className="flex items-center gap-0.5 font-bold text-blue-800 border-l border-slate-200 pl-2">
+                                ⚡ MID: {team.metrics.avgMidfield}
+                              </span>
+                              <span title="Aggregate finishing/attacking strength across all team players (Striker, Winger, Attacking Midfielder)" className="flex items-center gap-0.5 font-bold text-amber-900 border-l border-slate-200 pl-2">
+                                🎯 ATT: {team.metrics.avgAttacking}
+                              </span>
+                            </div>
+                          </div>
                           
                           {/* Role Breakdown visuals */}
                           <div className="grid grid-cols-4 gap-1 text-center font-bold">

@@ -14,6 +14,9 @@ export interface TeamMetrics {
   defCount: number;
   midCount: number;
   attCount: number;
+  avgDefending?: number;
+  avgMidfield?: number;
+  avgAttacking?: number;
   // Optional parsed trait counts for backward compatibility & analytical balancing
   poorPositioningCount?: number;
   lazyCount?: number;
@@ -92,6 +95,42 @@ export function getPlayerRole(player: Player): PlayerRole {
   return posRatings[0].role;
 }
 
+export function getPlayerDefendingVal(player: Player): number {
+  const values = [player.centreBack, player.rightBack, player.leftBack, player.defensiveMidfielder].filter(v => v !== undefined && v > 0) as number[];
+  if (values.length > 0) {
+    return Math.max(...values);
+  }
+  const role = getPlayerRole(player);
+  if (role === 'DEF') return player.bestRating;
+  if (role === 'MID') return Math.max(40, player.bestRating - 10);
+  if (role === 'ATT') return Math.max(40, player.bestRating - 18);
+  return 40;
+}
+
+export function getPlayerMidfieldVal(player: Player): number {
+  const values = [player.defensiveMidfielder, player.midfielder, player.attackingMidfielder].filter(v => v !== undefined && v > 0) as number[];
+  if (values.length > 0) {
+    return Math.max(...values);
+  }
+  const role = getPlayerRole(player);
+  if (role === 'MID') return player.bestRating;
+  if (role === 'DEF') return Math.max(40, player.bestRating - 10);
+  if (role === 'ATT') return Math.max(40, player.bestRating - 10);
+  return 40;
+}
+
+export function getPlayerAttackingVal(player: Player): number {
+  const values = [player.attackingMidfielder, player.winger, player.striker].filter(v => v !== undefined && v > 0) as number[];
+  if (values.length > 0) {
+    return Math.max(...values);
+  }
+  const role = getPlayerRole(player);
+  if (role === 'ATT') return player.bestRating;
+  if (role === 'MID') return Math.max(40, player.bestRating - 10);
+  if (role === 'DEF') return Math.max(40, player.bestRating - 18);
+  return 40;
+}
+
 /**
  * Calculates metrics for a group of players forming a team.
  */
@@ -104,6 +143,9 @@ export function calculateTeamMetrics(players: Player[]): TeamMetrics {
       defCount: 0,
       midCount: 0,
       attCount: 0,
+      avgDefending: 0,
+      avgMidfield: 0,
+      avgAttacking: 0,
       poorPositioningCount: 0,
       lazyCount: 0,
       slowCount: 0,
@@ -122,6 +164,9 @@ export function calculateTeamMetrics(players: Player[]): TeamMetrics {
   let defCount = 0;
   let midCount = 0;
   let attCount = 0;
+  let totalDefending = 0;
+  let totalMidfield = 0;
+  let totalAttacking = 0;
   let poorPositioningCount = 0;
   let lazyCount = 0;
   let slowCount = 0;
@@ -135,6 +180,9 @@ export function calculateTeamMetrics(players: Player[]): TeamMetrics {
   for (const player of players) {
     totalSkill += player.bestRating;
     totalStamina += player.stamina || 70;
+    totalDefending += getPlayerDefendingVal(player);
+    totalMidfield += getPlayerMidfieldVal(player);
+    totalAttacking += getPlayerAttackingVal(player);
 
     const role = getPlayerRole(player);
     if (role === 'GK') gkCount++;
@@ -158,6 +206,9 @@ export function calculateTeamMetrics(players: Player[]): TeamMetrics {
   return {
     avgSkill: Math.round((totalSkill / players.length) * 10) / 10,
     avgStamina: Math.round((totalStamina / players.length) * 10) / 10,
+    avgDefending: Math.round((totalDefending / players.length) * 10) / 10,
+    avgMidfield: Math.round((totalMidfield / players.length) * 10) / 10,
+    avgAttacking: Math.round((totalAttacking / players.length) * 10) / 10,
     gkCount,
     defCount,
     midCount,
@@ -184,15 +235,29 @@ function evaluatePartition(teams: Team[], segregatedPairs?: string[]): number {
   // Calculate overall means
   let totalSkillMean = 0;
   let totalStaminaMean = 0;
+  let totalDefendingMean = 0;
+  let totalMidfieldMean = 0;
+  let totalAttackingMean = 0;
+
   for (const team of teams) {
     totalSkillMean += team.metrics.avgSkill;
     totalStaminaMean += team.metrics.avgStamina;
+    totalDefendingMean += team.metrics.avgDefending || 0;
+    totalMidfieldMean += team.metrics.avgMidfield || 0;
+    totalAttackingMean += team.metrics.avgAttacking || 0;
   }
   const meanSkill = totalSkillMean / teams.length;
   const meanStamina = totalStaminaMean / teams.length;
+  const meanDefending = totalDefendingMean / teams.length;
+  const meanMidfield = totalMidfieldMean / teams.length;
+  const meanAttacking = totalAttackingMean / teams.length;
 
   let skillVariance = 0;
   let staminaVariance = 0;
+  let defendingVariance = 0;
+  let midfieldVariance = 0;
+  let attackingVariance = 0;
+
   let gkVariance = 0;
   let defVariance = 0;
   let midVariance = 0;
@@ -217,6 +282,10 @@ function evaluatePartition(teams: Team[], segregatedPairs?: string[]): number {
   for (const team of teams) {
     skillVariance += Math.pow(team.metrics.avgSkill - meanSkill, 2);
     staminaVariance += Math.pow(team.metrics.avgStamina - meanStamina, 2);
+    defendingVariance += Math.pow((team.metrics.avgDefending || 0) - meanDefending, 2);
+    midfieldVariance += Math.pow((team.metrics.avgMidfield || 0) - meanMidfield, 2);
+    attackingVariance += Math.pow((team.metrics.avgAttacking || 0) - meanAttacking, 2);
+
     sizeVariance += Math.pow(team.players.length - meanSize, 2);
     
     // We want to minimize variance of specific positions
@@ -279,11 +348,14 @@ function evaluatePartition(teams: Team[], segregatedPairs?: string[]): number {
     (sizeGap * 100000) + 
     (gkGap * 50000) +
     (skillVariance * 10000) +
+    (defendingVariance * 8000) +
+    (midfieldVariance * 8000) +
+    (attackingVariance * 8000) +
     (sizeVariance * 20000) +
     (gkVariance * 500) +
     (defVariance * 100) +
     (midVariance * 60) +
-    (attVariance * 100) +
+    (attVariance * 105) +
     (staminaVariance * 20) +
 
     // Attribute distribution penalties
