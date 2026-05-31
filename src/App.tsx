@@ -64,6 +64,7 @@ import {
 } from './balancer';
 
 import { ClubLogo, ClubBanner } from './components/ClubLogo';
+import { TeamRadarChart } from './components/TeamRadarChart';
 
 // Demo selection list from the prompt image
 const DEMO_ATTENDEES_RAW = `Cristiano Miries
@@ -2408,7 +2409,8 @@ export default function App() {
 
               {/* Generated balanced team cards list */}
               {generatedTeams.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {generatedTeams.map((team, tIdx) => {
                     const colors = [
                       { bg: 'border-l-sky-500', headerBg: 'bg-sky-50/50 text-sky-800 border-b border-sky-100', barHex: 'bg-sky-500', badge: 'bg-sky-100 text-sky-800 border border-sky-200' },
@@ -2613,6 +2615,10 @@ export default function App() {
                     );
                   })}
                 </div>
+
+                {/* Tactical Spider Chart comparing all of the attributes dynamically */}
+                <TeamRadarChart teams={generatedTeams} />
+                </>
               ) : (
                 <div className="bg-white border border-slate-200 rounded-xl p-8 text-center text-slate-500 shadow-sm">
                   <Shuffle className="h-10 w-10 text-slate-300 mx-auto mb-3 animate-pulse" />
