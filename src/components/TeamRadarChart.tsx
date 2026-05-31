@@ -1,7 +1,6 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Team } from '../balancer';
 import { Award, Shield, Zap, Crosshair, Activity, Sparkles, AlertCircle, Eye, EyeOff, Copy } from 'lucide-react';
-import { toBlob } from 'html-to-image';
 
 interface TeamRadarChartProps {
   teams: Team[];
@@ -36,12 +35,8 @@ export const TeamRadarChart: React.FC<TeamRadarChartProps> = ({ teams }) => {
     value: number;
   } | null>(null);
 
-  // Copy/capturing status states
+  // Copy to clipboard notification state
   const [copied, setCopied] = useState(false);
-  const [copying, setCopying] = useState(false);
-
-  // Reference to target content element wrapper (holds custom SVG + tables side-by-side)
-  const contentRef = useRef<HTMLDivElement>(null);
 
   // Helper to generate text visual bar for copied footprints
   const generateBar = (val: number) => {
@@ -49,85 +44,53 @@ export const TeamRadarChart: React.FC<TeamRadarChartProps> = ({ teams }) => {
     return '■'.repeat(filled) + '░'.repeat(10 - filled);
   };
 
-  // Copy beautiful high-fidelity visual image (falls back gracefully to plain text report)
-  const handleCopyReport = async () => {
-    if (copying) return;
-    setCopying(true);
-    let imageCopiedSuccessfully = false;
+  // Copy beautiful ASCII footprint & stats reports
+  const handleCopyReport = () => {
+    let report = `📊 TACTICAL DIAGRAM & COMPARATIVE STATS REPORT\n`;
+    report += `==============================================\n\n`;
 
-    if (contentRef.current) {
-      try {
-        // Render target DOM elements into high-res PNG blob representation
-        const blob = await toBlob(contentRef.current, {
-          backgroundColor: '#ffffff',
-          style: {
-            padding: '20px',
-            borderRadius: '12px',
-          },
-          cacheBust: true,
-        });
-
-        if (blob) {
-          const item = new ClipboardItem({ 'image/png': blob });
-          await navigator.clipboard.write([item]);
-          imageCopiedSuccessfully = true;
-        }
-      } catch (err) {
-        console.warn('Image clipboard copy failed or is unsupported. Falling back to text report:', err);
-      }
-    }
-
-    // Elegant text fallback if clipboard picture writing is restricted
-    if (!imageCopiedSuccessfully) {
-      let report = `📊 TACTICAL DIAGRAM & COMPARATIVE STATS REPORT\n`;
-      report += `==============================================\n\n`;
-
-      report += `📈 VISUAL RADAR CHART FOOTPRINTS:\n`;
-      report += `----------------------------------\n`;
-      teams.forEach((team) => {
-        const isVisible = syncTeams[team.id] !== false;
-        if (!isVisible) return;
-        
-        report += `${team.name.toUpperCase()} (Tactical Signature):\n`;
-        attributes.forEach(attr => {
-          const val = team.metrics[attr.key] !== undefined ? (team.metrics[attr.key] as number) : 0;
-          const bar = generateBar(val);
-          let emoji = '🔮';
-          if (attr.key === 'avgDefending') emoji = '🛡️ DEF';
-          if (attr.key === 'avgMidfield') emoji = '⚡ MID';
-          if (attr.key === 'avgAttacking') emoji = '🎯 ATT';
-          if (attr.key === 'avgStamina') emoji = '🔋 STA';
-          if (attr.key === 'avgSkill') emoji = '🏆 OVR';
-          report += `  ${emoji.padEnd(6, ' ')}: [${bar}] ${val}\n`;
-        });
-        report += `\n`;
-      });
-
-      report += `📊 SIDE-BY-SIDE STATS COMPARISON:\n`;
-      report += `----------------------------------\n`;
+    report += `📈 VISUAL RADAR CHART FOOTPRINTS:\n`;
+    report += `----------------------------------\n`;
+    teams.forEach((team) => {
+      const isVisible = syncTeams[team.id] !== false;
+      if (!isVisible) return;
+      
+      report += `${team.name.toUpperCase()} (Tactical Signature):\n`;
       attributes.forEach(attr => {
-        report += `🔹 [${attr.label}]:\n`;
-        teams.forEach(team => {
-          const val = team.metrics[attr.key] !== undefined ? (team.metrics[attr.key] as number) : 0;
-          const isWinner = winners[attr.key]?.ids.includes(team.id);
-          const winMarker = isWinner && teams.length > 1 ? ' ⭐ (Leader)' : '';
-          report += `   - ${team.name}: ${val}${winMarker}\n`;
-        });
-        report += `\n`;
+        const val = team.metrics[attr.key] !== undefined ? (team.metrics[attr.key] as number) : 0;
+        const bar = generateBar(val);
+        let emoji = '🔮';
+        if (attr.key === 'avgDefending') emoji = '🛡️ DEF';
+        if (attr.key === 'avgMidfield') emoji = '⚡ MID';
+        if (attr.key === 'avgAttacking') emoji = '🎯 ATT';
+        if (attr.key === 'avgStamina') emoji = '🔋 STA';
+        if (attr.key === 'avgSkill') emoji = '🏆 OVR';
+        report += `  ${emoji.padEnd(6, ' ')}: [${bar}] ${val}\n`;
       });
+      report += `\n`;
+    });
 
-      report += `Generated automatically via Tactical Team Balancer.\n`;
+    report += `📊 SIDE-BY-SIDE STATS COMPARISON:\n`;
+    report += `----------------------------------\n`;
+    attributes.forEach(attr => {
+      report += `🔹 [${attr.label}]:\n`;
+      teams.forEach(team => {
+        const val = team.metrics[attr.key] !== undefined ? (team.metrics[attr.key] as number) : 0;
+        const isWinner = winners[attr.key]?.ids.includes(team.id);
+        const winMarker = isWinner && teams.length > 1 ? ' ⭐ (Leader)' : '';
+        report += `   - ${team.name}: ${val}${winMarker}\n`;
+      });
+      report += `\n`;
+    });
 
-      try {
-        await navigator.clipboard.writeText(report);
-      } catch (errB) {
-        console.error('Final plain text copy failed:', errB);
-      }
-    }
+    report += `Generated automatically via Tactical Team Balancer.\n`;
 
-    setCopying(false);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    navigator.clipboard.writeText(report).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(err => {
+      console.error('Failed to copy text: ', err);
+    });
   };
 
   // Re-sync visibility state if teams list changes (e.g. after balancing)
@@ -280,12 +243,11 @@ export const TeamRadarChart: React.FC<TeamRadarChartProps> = ({ teams }) => {
             </h2>
             <button
               onClick={handleCopyReport}
-              disabled={copying}
-              className="px-5 h-11 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 flex items-center gap-2 transition cursor-pointer border-solid shadow disabled:opacity-50"
+              className="px-5 h-11 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 flex items-center gap-2 transition cursor-pointer border-solid shadow"
               title="Copy visual radar signature and side-by-side stats report to clipboard"
             >
               <Copy className="h-4 w-4 text-blue-600" />
-              {copying ? 'Capturing...' : copied ? 'Copied!' : 'Copy Report'}
+              {copied ? 'Copied!' : 'Copy Report'}
             </button>
           </div>
           <p className="text-[11px] text-slate-500 font-medium mt-1">
@@ -317,7 +279,7 @@ export const TeamRadarChart: React.FC<TeamRadarChartProps> = ({ teams }) => {
         </div>
       </div>
 
-      <div ref={contentRef} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-white">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         {/* Radar SVG Left Column */}
         <div className="lg:col-span-6 flex items-center justify-center relative">
           <div className="max-w-[100%] w-[380px] h-[380px] bg-slate-50/50 rounded-xl p-2 border border-slate-100/80 relative">
