@@ -151,7 +151,20 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'picker' | 'database' | 'security'>('picker');
   
   // --- Local IAM State ---
-  const [iamUsers, setIamUsers] = useState<IAMUser[]>(STATIC_IAM_ROSTER);
+  const [iamUsers, setIamUsers] = useState<IAMUser[]>(() => {
+    const saved = localStorage.getItem('bt_iam_users');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      } catch (err) {
+        // ignore parsing error, default to STATIC_IAM_ROSTER
+      }
+    }
+    return STATIC_IAM_ROSTER;
+  });
   const [hasLoadedFromServer, setHasLoadedFromServer] = useState(false);
 
   const [currentUser, setCurrentUser] = useState<IAMUser | null>(() => {
@@ -225,17 +238,35 @@ export default function App() {
         let usersList: IAMUser[] = [];
         
         usersSnapshot.forEach((docSnap) => {
-          usersList.push(docSnap.data() as IAMUser);
+          const u = docSnap.data() as IAMUser;
+          // Heal loaded user to ensure proper structure (must have createdAt, no extraneous fields)
+          usersList.push({
+            id: u.id,
+            name: u.name,
+            pin: u.pin,
+            role: u.role,
+            createdAt: u.createdAt || '2026-05-25T00:00:00.000Z'
+          });
         });
 
         // If the database has no registered users yet, seed it with the default static roster
         if (usersList.length === 0) {
           console.log("Seeding Firestore with default master roster...");
           for (const user of STATIC_IAM_ROSTER) {
-            await setDoc(doc(db, "iam_users", user.id), user);
-            usersList.push(user);
+            const cleanUser = {
+              id: user.id,
+              name: user.name,
+              pin: user.pin,
+              role: user.role,
+              createdAt: user.createdAt || '2026-05-25T00:00:00.000Z'
+            };
+            await setDoc(doc(db, "iam_users", user.id), cleanUser);
+            usersList.push(cleanUser);
           }
         }
+
+        // Save loaded users list to LocalStorage as a local backup fallback
+        localStorage.setItem('bt_iam_users', JSON.stringify(usersList));
 
         if (active) {
           setIamUsers(usersList);
@@ -284,6 +315,21 @@ export default function App() {
         }
       } catch (err) {
         console.error("Error reading database configurations from Firestore:", err);
+        
+        // Offline / access denied fallback: restore user roster state from LocalStorage cache
+        const cachedUsers = localStorage.getItem('bt_iam_users');
+        if (cachedUsers) {
+          try {
+            const parsed = JSON.parse(cachedUsers);
+            if (active && Array.isArray(parsed) && parsed.length > 0) {
+              console.log("Restored IAM users list from local cache backup due to connection/access error.");
+              setIamUsers(parsed);
+            }
+          } catch (cacheErr) {
+            console.error("Error parsing cached users roster backup:", cacheErr);
+          }
+        }
+
         if (active) {
           setHasLoadedFromServer(true);
         }
@@ -301,11 +347,24 @@ export default function App() {
   useEffect(() => {
     if (!hasLoadedFromServer) return;
 
+    // Persist to LocalStorage cache immediately for responsive, stateful local persistence
+    localStorage.setItem('bt_iam_users', JSON.stringify(iamUsers));
+
     async function syncIamUsersToFirestore() {
       try {
-        // Write/Update all active users in state
+        // Write/Update all active users in state.
+        // We clean each record's payload to consist of EXACTLY the 5 fields
+        // expected by Firestore security rules (id, name, pin, role, createdAt).
+        // This blocks extraneous properties (like sessionStartedAt) from causing Firestore write permission failures.
         for (const user of iamUsers) {
-          await setDoc(doc(db, "iam_users", user.id), user);
+          const cleanUser = {
+            id: user.id,
+            name: user.name,
+            pin: user.pin,
+            role: user.role,
+            createdAt: user.createdAt || '2026-05-25T00:00:00.000Z'
+          };
+          await setDoc(doc(db, "iam_users", user.id), cleanUser);
         }
 
         // Clean up retired users from Firestore that are no longer in our iamUsers list
