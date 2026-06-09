@@ -2290,28 +2290,28 @@ export default function App() {
                                     className="flex-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[10px] font-bold py-1 rounded transition cursor-pointer"
                                     title="Add guest goalkeeper"
                                   >
-                                    GK (70)
+                                    GK (75)
                                   </button>
                                   <button
                                     onClick={() => handleCreateGuestForUnmatched(rawName, 'DEF')}
                                     className="flex-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-[10px] font-bold py-1 rounded transition cursor-pointer"
                                     title="Add guest defender"
                                   >
-                                    Def (70)
+                                    Def (75)
                                   </button>
                                   <button
                                     onClick={() => handleCreateGuestForUnmatched(rawName, 'MID')}
                                     className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-[10px] font-bold py-1 rounded transition cursor-pointer"
                                     title="Add guest midfielder"
                                   >
-                                    Mid (70)
+                                    Mid (75)
                                   </button>
                                   <button
                                     onClick={() => handleCreateGuestForUnmatched(rawName, 'ATT')}
                                     className="flex-1 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-[10px] font-bold py-1 rounded transition cursor-pointer"
                                     title="Add guest striker"
                                   >
-                                    Str (70)
+                                    Str (75)
                                   </button>
                                 </div>
                               </div>
