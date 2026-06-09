@@ -55,6 +55,10 @@
           "type": "integer",
           "description": "The selected quantity of teams to partition groups into."
         },
+        "useTacticalBalancing": {
+          "type": "boolean",
+          "description": "Whether to balance squads across specific tactical positions or prioritize dominant core ratings."
+        },
         "segregatedPairs": {
           "type": "array",
           "description": "Normalized pairs of player IDs to always place onto separate squads."
@@ -65,7 +69,7 @@
           "description": "ISO timestamp of the latest database save."
         }
       },
-      "required": ["csvContent", "rawAttendeesText", "nameMappings", "customGuests", "selectedNumTeams", "segregatedPairs"]
+      "required": ["csvContent", "rawAttendeesText", "nameMappings", "customGuests", "selectedNumTeams", "useTacticalBalancing", "segregatedPairs"]
     },
     "SecuritySettings": {
       "title": "SecuritySettings",

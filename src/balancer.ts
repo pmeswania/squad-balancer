@@ -307,6 +307,50 @@ function evaluatePartition(teams: Team[], segregatedPairs?: string[], useTactica
     solidVariance += Math.pow(team.metrics.solidCount || 0, 2);
   }
 
+  // Calculate dominant position ratings globally to support balancing rating quality within positions
+  const allPlayers = teams.flatMap(t => t.players);
+  const globalDefs = allPlayers.filter(p => getPlayerRole(p) === 'DEF');
+  const globalMids = allPlayers.filter(p => getPlayerRole(p) === 'MID');
+  const globalAtts = allPlayers.filter(p => getPlayerRole(p) === 'ATT');
+
+  const globalMeanDef = globalDefs.length > 0 ? globalDefs.reduce((s, p) => s + p.bestRating, 0) / globalDefs.length : 70;
+  const globalMeanMid = globalMids.length > 0 ? globalMids.reduce((s, p) => s + p.bestRating, 0) / globalMids.length : 70;
+  const globalMeanAtt = globalAtts.length > 0 ? globalAtts.reduce((s, p) => s + p.bestRating, 0) / globalAtts.length : 70;
+
+  // Collect dominant positional ratings averages for all teams
+  const teamDefMeans = teams.map(t => {
+    const playersOfRole = t.players.filter(p => getPlayerRole(p) === 'DEF');
+    return playersOfRole.length > 0 
+      ? playersOfRole.reduce((s, p) => s + p.bestRating, 0) / playersOfRole.length 
+      : globalMeanDef;
+  });
+  const teamMidMeans = teams.map(t => {
+    const playersOfRole = t.players.filter(p => getPlayerRole(p) === 'MID');
+    return playersOfRole.length > 0 
+      ? playersOfRole.reduce((s, p) => s + p.bestRating, 0) / playersOfRole.length 
+      : globalMeanMid;
+  });
+  const teamAttMeans = teams.map(t => {
+    const playersOfRole = t.players.filter(p => getPlayerRole(p) === 'ATT');
+    return playersOfRole.length > 0 
+      ? playersOfRole.reduce((s, p) => s + p.bestRating, 0) / playersOfRole.length 
+      : globalMeanAtt;
+  });
+
+  const meanTeamDef = teamDefMeans.reduce((s, v) => s + v, 0) / teams.length;
+  const meanTeamMid = teamMidMeans.reduce((s, v) => s + v, 0) / teams.length;
+  const meanTeamAtt = teamAttMeans.reduce((s, v) => s + v, 0) / teams.length;
+
+  let dominantDefRatingVariance = 0;
+  let dominantMidRatingVariance = 0;
+  let dominantAttRatingVariance = 0;
+
+  for (let i = 0; i < teams.length; i++) {
+    dominantDefRatingVariance += Math.pow(teamDefMeans[i] - meanTeamDef, 2);
+    dominantMidRatingVariance += Math.pow(teamMidMeans[i] - meanTeamMid, 2);
+    dominantAttRatingVariance += Math.pow(teamAttMeans[i] - meanTeamAtt, 2);
+  }
+
   // To penalize uneven GK distribution, we check the global GK count spread.
   // If we have 2 GKs, they should be in separate teams.
   // We can measure the gap between max and min GK counts.
@@ -353,9 +397,14 @@ function evaluatePartition(teams: Team[], segregatedPairs?: string[], useTactica
     (useTacticalBalancing ? (attackingVariance * 8000) : 0) +
     (sizeVariance * 20000) +
     (gkVariance * 500) +
-    (useTacticalBalancing ? (defVariance * 100) : 0) +
-    (useTacticalBalancing ? (midVariance * 60) : 0) +
-    (useTacticalBalancing ? (attVariance * 105) : 0) +
+    // Position counts are always balanced regardless of toggle!
+    (defVariance * 100) +
+    (midVariance * 60) +
+    (attVariance * 105) +
+    // Position dominant ratings are always balanced regardless of toggle!
+    (dominantDefRatingVariance * 8000) +
+    (dominantMidRatingVariance * 8000) +
+    (dominantAttRatingVariance * 8000) +
     (staminaVariance * 20) +
 
     // Attribute distribution penalties
