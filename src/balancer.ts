@@ -229,7 +229,7 @@ export function calculateTeamMetrics(players: Player[]): TeamMetrics {
  * Calculates a penalty score for an entire partition of teams.
  * Lower score = better balanced partition.
  */
-function evaluatePartition(teams: Team[], segregatedPairs?: string[]): number {
+function evaluatePartition(teams: Team[], segregatedPairs?: string[], useTacticalBalancing = true): number {
   if (teams.length <= 1) return 0;
 
   // Calculate overall means
@@ -348,14 +348,14 @@ function evaluatePartition(teams: Team[], segregatedPairs?: string[]): number {
     (sizeGap * 100000) + 
     (gkGap * 50000) +
     (skillVariance * 10000) +
-    (defendingVariance * 8000) +
-    (midfieldVariance * 8000) +
-    (attackingVariance * 8000) +
+    (useTacticalBalancing ? (defendingVariance * 8000) : 0) +
+    (useTacticalBalancing ? (midfieldVariance * 8000) : 0) +
+    (useTacticalBalancing ? (attackingVariance * 8000) : 0) +
     (sizeVariance * 20000) +
     (gkVariance * 500) +
-    (defVariance * 100) +
-    (midVariance * 60) +
-    (attVariance * 105) +
+    (useTacticalBalancing ? (defVariance * 100) : 0) +
+    (useTacticalBalancing ? (midVariance * 60) : 0) +
+    (useTacticalBalancing ? (attVariance * 105) : 0) +
     (staminaVariance * 20) +
 
     // Attribute distribution penalties
@@ -421,7 +421,7 @@ export function getTeamSuggestions(playerCount: number): SuggestionOption[] {
  * 1. Initial snake draft partitioning sorted by player skill.
  * 2. Simulated local search/greedy swapping to minimize variance across skill, stamina, roles, and goalkeeper splits.
  */
-export function generateBalancedTeams(players: Player[], numTeams: number, segregatedPairs?: string[]): Team[] {
+export function generateBalancedTeams(players: Player[], numTeams: number, segregatedPairs?: string[], useTacticalBalancing = true): Team[] {
   if (players.length === 0 || numTeams <= 0) return [];
 
   // Sort players by bestRating descending so our initial snake draft starts strong
@@ -474,7 +474,7 @@ export function generateBalancedTeams(players: Player[], numTeams: number, segre
     team.metrics = calculateTeamMetrics(team.players);
   }
 
-  let bestScore = evaluatePartition(bestTeams, segregatedPairs);
+  let bestScore = evaluatePartition(bestTeams, segregatedPairs, useTacticalBalancing);
 
   // LOCAL REFINEMENT SEARCH (Greedy hill-climbing swap)
   // We perform up to 4,000 iterations of random player swaps. If a swap makes the rating variance
@@ -509,7 +509,7 @@ export function generateBalancedTeams(players: Player[], numTeams: number, segre
     t1.metrics = calculateTeamMetrics(t1.players);
     t2.metrics = calculateTeamMetrics(t2.players);
 
-    const newScore = evaluatePartition(bestTeams, segregatedPairs);
+    const newScore = evaluatePartition(bestTeams, segregatedPairs, useTacticalBalancing);
 
     if (newScore < bestScore) {
       // Keep the swap! It's a better balance

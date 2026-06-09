@@ -139,6 +139,11 @@ export default function App() {
     return saved ? parseInt(saved, 10) : 3;
   });
 
+  const [useTacticalBalancing, setUseTacticalBalancing] = useState<boolean>(() => {
+    const saved = localStorage.getItem('bt_use_tactical_balancing');
+    return saved !== null ? saved === 'true' : true;
+  });
+
   const [segregatedPairs, setSegregatedPairs] = useState<string[]>(() => {
     const saved = localStorage.getItem('bt_segregated_pairs');
     return saved ? JSON.parse(saved) : [];
@@ -285,6 +290,7 @@ export default function App() {
             if (pData.nameMappings !== undefined) setNameMappings(pData.nameMappings);
             if (pData.customGuests !== undefined) setCustomGuests(pData.customGuests);
             if (pData.selectedNumTeams !== undefined) setSelectedNumTeams(pData.selectedNumTeams);
+            if (pData.useTacticalBalancing !== undefined) setUseTacticalBalancing(pData.useTacticalBalancing);
             if (pData.segregatedPairs !== undefined) setSegregatedPairs(pData.segregatedPairs);
           }
         } else {
@@ -304,6 +310,10 @@ export default function App() {
             selectedNumTeams: (() => {
               const saved = localStorage.getItem('bt_num_teams');
               return saved ? parseInt(saved, 10) : 3;
+            })(),
+            useTacticalBalancing: (() => {
+              const saved = localStorage.getItem('bt_use_tactical_balancing');
+              return saved !== null ? saved === 'true' : true;
             })(),
             segregatedPairs: (() => {
               const saved = localStorage.getItem('bt_segregated_pairs');
@@ -396,6 +406,7 @@ export default function App() {
           nameMappings,
           customGuests,
           selectedNumTeams,
+          useTacticalBalancing,
           segregatedPairs,
           updatedAt: new Date().toISOString()
         });
@@ -406,7 +417,12 @@ export default function App() {
     }, 1000);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [csvContent, rawAttendeesText, nameMappings, customGuests, selectedNumTeams, segregatedPairs, hasLoadedFromServer]);
+  }, [csvContent, rawAttendeesText, nameMappings, customGuests, selectedNumTeams, useTacticalBalancing, segregatedPairs, hasLoadedFromServer]);
+
+  // Persist useTacticalBalancing to localStorage locally
+  useEffect(() => {
+    localStorage.setItem('bt_use_tactical_balancing', useTacticalBalancing.toString());
+  }, [useTacticalBalancing]);
 
   // Handle active session sync and verification
   useEffect(() => {
@@ -1227,7 +1243,7 @@ export default function App() {
   // Trigger Team Generation
   const handleGenerateTeams = () => {
     if (participatingPlayers.length === 0) return;
-    const teams = generateBalancedTeams(participatingPlayers, selectedNumTeams, segregatedPairs);
+    const teams = generateBalancedTeams(participatingPlayers, selectedNumTeams, segregatedPairs, useTacticalBalancing);
     setGeneratedTeams(teams);
   };
 
@@ -1238,7 +1254,7 @@ export default function App() {
     } else {
       setGeneratedTeams([]);
     }
-  }, [participatingPlayers, selectedNumTeams, segregatedPairs]);
+  }, [participatingPlayers, selectedNumTeams, segregatedPairs, useTacticalBalancing]);
 
   // Copy results format to clipboard
   const handleCopyToClipboard = () => {
@@ -2482,6 +2498,43 @@ export default function App() {
                         <div className="text-slate-400 italic">Analysis will load once attendees find directory ratings.</div>
                       )}
                     </div>
+                  </div>
+                </div>
+
+                {/* Tactical & Collective Balancing Option */}
+                <div className="mt-4 pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-50/50 p-4 rounded-xl border border-dashed border-slate-200">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-705 uppercase tracking-wider">Tactical & Collective Balancing</span>
+                      {useTacticalBalancing ? (
+                        <span className="bg-blue-100 text-blue-800 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Enabled</span>
+                      ) : (
+                        <span className="bg-slate-200 text-slate-700 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Disabled</span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                      {useTacticalBalancing 
+                        ? "Teams are balanced evenly across specific Defensive, Midfield, and Attack categories (using specific positional ratings)."
+                        : "Collective tactical balances are ignored. Teams are matched based only on dominant overall skill rating and distribution of traits."
+                      }
+                    </p>
+                  </div>
+                  <div className="relative inline-flex items-center cursor-pointer select-none shrink-0">
+                    <button
+                      onClick={() => setUseTacticalBalancing(!useTacticalBalancing)}
+                      className={`h-6 w-11 rounded-full p-0.5 transition-colors duration-200 outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer ${
+                        useTacticalBalancing ? 'bg-blue-600' : 'bg-slate-300'
+                      }`}
+                      role="switch"
+                      type="button"
+                      aria-checked={useTacticalBalancing}
+                    >
+                      <span
+                        className={`block h-5 w-5 rounded-full bg-white shadow-md transform transition-transform duration-200 ease-in-out ${
+                          useTacticalBalancing ? 'translate-x-5' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
                   </div>
                 </div>
 
