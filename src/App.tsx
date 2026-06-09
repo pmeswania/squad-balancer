@@ -1092,6 +1092,7 @@ export default function App() {
   const [isCsvModified, setIsCsvModified] = useState<boolean>(false);
   const [generatedTeams, setGeneratedTeams] = useState<Team[]>([]);
   const [isCopied, setIsCopied] = useState<boolean>(false);
+  const [isCopiedNoRatings, setIsCopiedNoRatings] = useState<boolean>(false);
   
   // Manual move/swap state
   const [activeSwapPlayerId, setActiveSwapPlayerId] = useState<{ teamId: number; playerId: string } | null>(null);
@@ -1257,7 +1258,7 @@ export default function App() {
   }, [participatingPlayers, selectedNumTeams, segregatedPairs, useTacticalBalancing]);
 
   // Copy results format to clipboard
-  const handleCopyToClipboard = () => {
+  const handleCopyToClipboard = (excludeRatings = false) => {
     if (generatedTeams.length === 0) return;
 
     let text = `⚽ Balanced Team Selection ⚽\n`;
@@ -1265,17 +1266,34 @@ export default function App() {
     text += `Total Players: ${participatingPlayers.length} | Teams: ${generatedTeams.length}\n\n`;
 
     generatedTeams.forEach(team => {
-      text += `--- ${team.name.toUpperCase()} (Avg skill: ${team.metrics.avgSkill}) ---\n`;
+      if (excludeRatings) {
+        text += `--- ${team.name.toUpperCase()} ---\n`;
+      } else {
+        text += `--- ${team.name.toUpperCase()} (Avg skill: ${team.metrics.avgSkill}) ---\n`;
+      }
       team.players.forEach((p, index) => {
         const role = getPlayerRole(p);
-        text += `${index + 1}. ${p.fullName} [${role}] (Rating: ${p.bestRating})\n`;
+        if (excludeRatings) {
+          text += `${index + 1}. ${p.fullName} [${role}]\n`;
+        } else {
+          text += `${index + 1}. ${p.fullName} [${role}] (Rating: ${p.bestRating})\n`;
+        }
       });
-      text += `Stats: GK: ${team.metrics.gkCount} | DEF: ${team.metrics.defCount} | MID: ${team.metrics.midCount} | ATT: ${team.metrics.attCount}\n\n`;
+      if (excludeRatings) {
+        text += `\n`;
+      } else {
+        text += `Stats: GK: ${team.metrics.gkCount} | DEF: ${team.metrics.defCount} | MID: ${team.metrics.midCount} | ATT: ${team.metrics.attCount}\n\n`;
+      }
     });
 
     navigator.clipboard.writeText(text).then(() => {
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
+      if (excludeRatings) {
+        setIsCopiedNoRatings(true);
+        setTimeout(() => setIsCopiedNoRatings(false), 2000);
+      } else {
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+      }
     });
   };
 
@@ -2539,7 +2557,7 @@ export default function App() {
                 </div>
 
                 {/* Main Generation button */}
-                <div className="mt-5 flex gap-2">
+                <div className="mt-5 flex flex-col sm:flex-row gap-2">
                   <button
                     onClick={handleGenerateTeams}
                     disabled={participatingPlayers.length === 0}
@@ -2550,13 +2568,24 @@ export default function App() {
                   </button>
 
                   {generatedTeams.length > 0 && (
-                    <button
-                      onClick={handleCopyToClipboard}
-                      className="px-5 h-11 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 flex items-center gap-2 transition cursor-pointer border-solid shadow"
-                    >
-                      <Copy className="h-4 w-4 text-blue-600" />
-                      {isCopied ? 'Copied!' : 'Copy Teams'}
-                    </button>
+                    <>
+                      <button
+                        onClick={() => handleCopyToClipboard(false)}
+                        className="h-11 px-4 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 flex items-center justify-center gap-2 transition cursor-pointer border-solid shadow shrink-0"
+                        title="Copy teams with full skill ratings and position statistics"
+                      >
+                        <Copy className="h-4 w-4 text-blue-600" />
+                        {isCopied ? 'Copied with Ratings!' : 'Copy with Ratings'}
+                      </button>
+                      <button
+                        onClick={() => handleCopyToClipboard(true)}
+                        className="h-11 px-4 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 flex items-center justify-center gap-2 transition cursor-pointer border-solid shadow shrink-0"
+                        title="Copy player roster purely with names and roles"
+                      >
+                        <Copy className="h-4 w-4 text-emerald-600" />
+                        {isCopiedNoRatings ? 'Copied Names!' : 'Copy Names Only'}
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
