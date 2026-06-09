@@ -279,9 +279,9 @@ export const TeamRadarChart: React.FC<TeamRadarChartProps> = ({ teams }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-        {/* Radar SVG Left Column */}
-        <div className="lg:col-span-6 flex items-center justify-center relative">
+      <div className="flex flex-col gap-8 w-full">
+        {/* Radar SVG Column */}
+        <div className="w-full flex items-center justify-center relative">
           <div className="max-w-[100%] w-[380px] h-[380px] bg-slate-50/50 rounded-xl p-2 border border-slate-100/80 relative">
             
             {/* SVG Render */}
@@ -456,8 +456,8 @@ export const TeamRadarChart: React.FC<TeamRadarChartProps> = ({ teams }) => {
           </div>
         </div>
 
-        {/* Side-by-Side Tactical Analytical Table Right Column */}
-        <div className="lg:col-span-6 flex flex-col gap-4">
+        {/* Side-by-Side Tactical Analytical Table Column */}
+        <div className="w-full max-w-4xl mx-auto flex flex-col gap-4">
           <div className="bg-slate-50 border border-slate-150 rounded-xl p-4 md:p-5 flex flex-col gap-3">
             <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5 select-none">
               <Sparkles className="h-4 w-4 text-amber-500 fill-amber-100" />
