@@ -318,23 +318,24 @@ function evaluatePartition(teams: Team[], segregatedPairs?: string[], useTactica
   const globalMeanAtt = globalAtts.length > 0 ? globalAtts.reduce((s, p) => s + p.bestRating, 0) / globalAtts.length : 70;
 
   // Collect dominant positional ratings averages for all teams
+  // We use a lower rating if a team has 0 players in a position, to ensure the optimizer seeks to populate all positions.
   const teamDefMeans = teams.map(t => {
     const playersOfRole = t.players.filter(p => getPlayerRole(p) === 'DEF');
     return playersOfRole.length > 0 
       ? playersOfRole.reduce((s, p) => s + p.bestRating, 0) / playersOfRole.length 
-      : globalMeanDef;
+      : Math.max(40, globalMeanDef - 25);
   });
   const teamMidMeans = teams.map(t => {
     const playersOfRole = t.players.filter(p => getPlayerRole(p) === 'MID');
     return playersOfRole.length > 0 
       ? playersOfRole.reduce((s, p) => s + p.bestRating, 0) / playersOfRole.length 
-      : globalMeanMid;
+      : Math.max(40, globalMeanMid - 25);
   });
   const teamAttMeans = teams.map(t => {
     const playersOfRole = t.players.filter(p => getPlayerRole(p) === 'ATT');
     return playersOfRole.length > 0 
       ? playersOfRole.reduce((s, p) => s + p.bestRating, 0) / playersOfRole.length 
-      : globalMeanAtt;
+      : Math.max(40, globalMeanAtt - 25);
   });
 
   const meanTeamDef = teamDefMeans.reduce((s, v) => s + v, 0) / teams.length;
@@ -384,23 +385,23 @@ function evaluatePartition(teams: Team[], segregatedPairs?: string[], useTactica
   // - GK gap: extremely critical
   // - Skill average variance: highly critical
   // - Size variance: highly critical
-  // - Positional distribution (GK, DEF, MID, ATT): moderate priority
+  // - Positional distribution (GK, DEF, MID, ATT): high priority (always balanced regardless of toggle)
   // - Traits: Positioning deficiencies, lazy behaviour, low pace, bad passing habits, and high temperaments are distributed
   
   return (
     segregationPenalty +
-    (sizeGap * 100000) + 
-    (gkGap * 50000) +
+    (sizeGap > 1 ? sizeGap * 10000000 : sizeGap * 100000) + 
+    (gkGap > 1 ? gkGap * 10000000 : gkGap * 50000) +
     (skillVariance * 10000) +
     (useTacticalBalancing ? (defendingVariance * 8000) : 0) +
     (useTacticalBalancing ? (midfieldVariance * 8000) : 0) +
     (useTacticalBalancing ? (attackingVariance * 8000) : 0) +
     (sizeVariance * 20000) +
     (gkVariance * 500) +
-    // Position counts are always balanced regardless of toggle!
-    (defVariance * 100) +
-    (midVariance * 60) +
-    (attVariance * 105) +
+    // Position counts are always balanced regardless of toggle (extremely high weight to prevent uneven count grouping)!
+    (defVariance * 150000) +
+    (midVariance * 150000) +
+    (attVariance * 150000) +
     // Position dominant ratings are always balanced regardless of toggle!
     (dominantDefRatingVariance * 8000) +
     (dominantMidRatingVariance * 8000) +
@@ -526,9 +527,9 @@ export function generateBalancedTeams(players: Player[], numTeams: number, segre
   let bestScore = evaluatePartition(bestTeams, segregatedPairs, useTacticalBalancing);
 
   // LOCAL REFINEMENT SEARCH (Greedy hill-climbing swap)
-  // We perform up to 4,000 iterations of random player swaps. If a swap makes the rating variance
+  // We perform up to 12,000 iterations of random player swaps. If a swap makes the rating variance
   // or layout better (lower penalty), we keep it, otherwise we revert.
-  const iterations = 4000;
+  const iterations = 12000;
   
   for (let iter = 0; iter < iterations; iter++) {
     // Pick two random, distinct teams
