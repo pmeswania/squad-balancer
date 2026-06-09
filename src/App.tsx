@@ -1332,17 +1332,25 @@ export default function App() {
     let am = 0;
     let wing = 0;
     let str = 0;
-    let bestRating = 70;
+    let bestRating = 75;
     let bestPosition = 'Midfielder';
 
     if (role === 'GK') {
-      gk = 70;
+      gk = 75;
+      rb = 0;
+      lb = 0;
+      cb = 0;
+      dm = 0;
+      mid = 0;
+      am = 0;
+      wing = 0;
+      str = 0;
       bestPosition = 'Goalkeeper';
     } else if (role === 'DEF') {
       gk = 15;
       rb = 65;
       lb = 65;
-      cb = 70;
+      cb = 75;
       dm = 60;
       mid = 60;
       am = 60;
@@ -1355,7 +1363,7 @@ export default function App() {
       lb = 60;
       cb = 60;
       dm = 60;
-      mid = 70;
+      mid = 75;
       am = 60;
       wing = 60;
       str = 60;
@@ -1369,7 +1377,7 @@ export default function App() {
       mid = 60;
       am = 60;
       wing = 60;
-      str = 70;
+      str = 75;
       bestPosition = 'Striker';
     }
 
@@ -1389,7 +1397,7 @@ export default function App() {
       striker: str,
       bestRating,
       bestPosition,
-      stamina: 70,
+      stamina: 75,
       positiveAttribute: 'Quick guest addition',
       isCustomGuest: true
     };
