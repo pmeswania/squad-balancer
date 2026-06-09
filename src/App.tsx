@@ -1285,27 +1285,80 @@ export default function App() {
   };
 
   // Create Custom Guest for Unresolved Names inline
-  const handleCreateGuestForUnmatched = (rawName: string, role: PlayerRole, rating: number) => {
+  const handleCreateGuestForUnmatched = (rawName: string, role: PlayerRole) => {
     const guestId = `GUEST_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
     
-    // Create guest ratings based on role
+    // Default values
+    let gk = 0;
+    let rb = 0;
+    let lb = 0;
+    let cb = 0;
+    let dm = 0;
+    let mid = 0;
+    let am = 0;
+    let wing = 0;
+    let str = 0;
+    let bestRating = 70;
+    let bestPosition = 'Midfielder';
+
+    if (role === 'GK') {
+      gk = 70;
+      bestPosition = 'Goalkeeper';
+    } else if (role === 'DEF') {
+      gk = 15;
+      rb = 65;
+      lb = 65;
+      cb = 70;
+      dm = 60;
+      mid = 60;
+      am = 60;
+      wing = 60;
+      str = 60;
+      bestPosition = 'Centre Back';
+    } else if (role === 'MID') {
+      gk = 15;
+      rb = 60;
+      lb = 60;
+      cb = 60;
+      dm = 60;
+      mid = 70;
+      am = 60;
+      wing = 60;
+      str = 60;
+      bestPosition = 'Midfielder';
+    } else if (role === 'ATT') {
+      gk = 15;
+      rb = 60;
+      lb = 60;
+      cb = 60;
+      dm = 60;
+      mid = 60;
+      am = 60;
+      wing = 60;
+      str = 70;
+      bestPosition = 'Striker';
+    }
+
     const guest: Player = {
       id: guestId,
       surname: 'Guest',
       firstName: rawName,
       fullName: `${rawName} (Guest)`,
-      bestRating: rating,
-      bestPosition: role === 'GK' ? 'Goalkeeper' : role === 'DEF' ? 'Centre Back' : role === 'MID' ? 'Midfielder' : 'Striker',
-      stamina: rating,
+      goalkeeper: gk,
+      rightBack: rb,
+      leftBack: lb,
+      centreBack: cb,
+      defensiveMidfielder: dm,
+      midfielder: mid,
+      attackingMidfielder: am,
+      winger: wing,
+      striker: str,
+      bestRating,
+      bestPosition,
+      stamina: 70,
       positiveAttribute: 'Quick guest addition',
       isCustomGuest: true
     };
-
-    // Fill in positional rating matching role
-    if (role === 'GK') guest.goalkeeper = rating;
-    else if (role === 'DEF') guest.centreBack = rating;
-    else if (role === 'MID') guest.midfielder = rating;
-    else if (role === 'ATT') guest.striker = rating;
 
     // Add to guests state
     setCustomGuests(prev => [...prev, guest]);
@@ -2191,25 +2244,32 @@ export default function App() {
                                 <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Setup temporary guest:</label>
                                 <div className="flex gap-1">
                                   <button
-                                    onClick={() => handleCreateGuestForUnmatched(rawName, 'GK', 80)}
+                                    onClick={() => handleCreateGuestForUnmatched(rawName, 'GK')}
                                     className="flex-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[10px] font-bold py-1 rounded transition cursor-pointer"
                                     title="Add guest goalkeeper"
                                   >
-                                    GK (80)
+                                    GK (70)
                                   </button>
                                   <button
-                                    onClick={() => handleCreateGuestForUnmatched(rawName, 'MID', 75)}
-                                    className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-[10px] font-bold py-1 rounded transition cursor-pointer"
+                                    onClick={() => handleCreateGuestForUnmatched(rawName, 'DEF')}
+                                    className="flex-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-[10px] font-bold py-1 rounded transition cursor-pointer"
+                                    title="Add guest defender"
+                                  >
+                                    Def (70)
+                                  </button>
+                                  <button
+                                    onClick={() => handleCreateGuestForUnmatched(rawName, 'MID')}
+                                    className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-[10px] font-bold py-1 rounded transition cursor-pointer"
                                     title="Add guest midfielder"
                                   >
-                                    Mid (75)
+                                    Mid (70)
                                   </button>
                                   <button
-                                    onClick={() => handleCreateGuestForUnmatched(rawName, 'ATT', 85)}
-                                    className="flex-1 bg-blue-50 hover:bg-blue-105 text-blue-700 border border-blue-200 text-[10px] font-bold py-1 rounded transition cursor-pointer"
+                                    onClick={() => handleCreateGuestForUnmatched(rawName, 'ATT')}
+                                    className="flex-1 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-[10px] font-bold py-1 rounded transition cursor-pointer"
                                     title="Add guest striker"
                                   >
-                                    Str (85)
+                                    Str (70)
                                   </button>
                                 </div>
                               </div>
